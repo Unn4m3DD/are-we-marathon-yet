@@ -70,7 +70,7 @@
             border-bottom: 1px solid var(--surface-2);
         }
         .metric-row:last-child { border-bottom: none; }
-        .metric-label { font-size: 0.8rem; color: var(--text-2); width: 100px; }
+        .metric-label { font-size: 0.8rem; color: var(--text-2); width: 120px; }
         .metric-value { font-weight: 600; }
         
         .flow-container {
@@ -169,38 +169,30 @@
             text-transform: uppercase;
         }
         
-        .viz-container {
-            display: flex;
-            align-items: end;
-            gap: 3px;
-            height: 60px;
-            padding: 0.5rem 0;
-        }
-        .viz-bar {
-            flex: 1;
-            background: var(--accent);
-            border-radius: 2px 2px 0 0;
-            min-height: 4px;
-            opacity: 0.8;
-            position: relative;
-        }
-        .viz-bar:hover { opacity: 1; }
-        
-        .progress-chain {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.75rem;
-        }
-        .chain-link {
-            padding: 0.2rem 0.4rem;
+        .scenario {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
             background: var(--surface-2);
-            border-radius: 3px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
         }
-        .chain-arrow { color: var(--text-2); }
-        
-        .small { font-size: 0.8rem; }
-        .muted { color: var(--text-2); }
+        .scenario.fail { border-left-color: var(--error); }
+        .scenario-header {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .scenario-desc {
+            font-size: 0.8rem;
+            color: var(--text-2);
+            margin-bottom: 0.5rem;
+        }
+        .scenario-result {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.75rem;
+            background: var(--bg);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+        }
         
         .two-col {
             display: grid;
@@ -210,19 +202,128 @@
         @media (max-width: 600px) {
             .two-col { grid-template-columns: 1fr; }
         }
+        
+        .small { font-size: 0.8rem; }
+        .muted { color: var(--text-2); }
     </style>
 </head>
 <body>
     <h1>Adaptive Marathon Training Model</h1>
-    <p class="subtitle">On-demand coaching logic with effort feedback integration</p>
+    <p class="subtitle">On-demand coaching logic with starting point calibration & effort feedback</p>
 
     <div class="card compact">
-        <strong>Core Principle:</strong> The model generates one workout at a time, never a future schedule. 
-        Each recommendation is computed fresh from current training state. Post-run effort ratings feed back 
-        into distance, intensity, and recovery calculations.
+        <strong>Core Principle:</strong> The model generates one workout at a time based on your <em>Fitness Level Score (FLS)</em>—
+        a hidden number calculated from every run's distance, time, and effort. No generic templates.
+        The FLS starts from your first run and self-tunes: easy runs that feel easy boost the score,
+        while hard runs slow progression. This single number drives pace, distance, and marathon timeline estimates.
     </div>
 
-    <h2>1. Input Signals</h2>
+    <h2>1. Fitness Level Score (FLS)</h2>
+    <div class="card">
+        <p class="small muted" style="margin-bottom: 0.75rem">
+            A hidden number (0-100) representing current aerobic fitness. Calculated from the very first run using
+            distance, time, and effort—then continuously refined. It is the single source of truth for all recommendations.
+        </p>
+
+        <h3>Initial FLS Calculation (First Run)</h3>
+        <div class="formula">
+            FLS_initial = 25 × (distance_km / 5) × (reference_pace / actual_pace) × ((11 − effort) / 8)<br>
+            <span style="color: var(--text-2)">// reference_pace = 7:00 min/km (casual baseline)</span>
+        </div>
+        <p class="small muted" style="margin-top: 0.5rem; margin-bottom: 0.75rem">
+            <strong>Example:</strong> First run is 5km in 30min (6:00/km pace) with effort 5<br>
+            FLS = 25 × (5/5) × (7/6) × (6/8) = 25 × 1.0 × 1.17 × 0.75 = <strong>21.9</strong>
+        </p>
+
+        <h3>FLS Update After Each Run</h3>
+        <div class="formula">
+            FLS_new = FLS_current + α × performance_delta<br>
+            performance_delta = (distance_factor × pace_factor × effort_factor) − 1<br>
+            <span style="color: var(--text-2)">// Expected values derived from current FLS; exceeding them = positive delta</span>
+        </div>
+
+        <div class="two-col" style="margin-top: 0.75rem">
+            <div>
+                <p class="small muted">Performance factors</p>
+                <table>
+                    <tr><td>Distance factor</td><td>actual_km / expected_km</td></tr>
+                    <tr><td>Pace factor</td><td>expected_pace / actual_pace</td></tr>
+                    <tr><td>Effort factor</td><td>(11 − effort) / 10</td></tr>
+                </table>
+            </div>
+            <div>
+                <p class="small muted">Learning rate (α)</p>
+                <table>
+                    <tr><td>Effort 1-4</td><td>2.0 (high confidence)</td></tr>
+                    <tr><td>Effort 5-6</td><td>1.0 (normal)</td></tr>
+                    <tr><td>Effort 7-8</td><td>0.5 (reduced)</td></tr>
+                    <tr><td>Effort 9-10</td><td>0.2 (low confidence)</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <p class="small muted" style="margin-top: 0.75rem">
+            <strong>Key insight:</strong> When a run feels easy (effort 3) and you hit the target pace,
+            FLS increases—meaning future runs will be longer/faster. When it feels hard (effort 8)
+            despite hitting targets, FLS grows slower or stalls, keeping subsequent workouts manageable.
+        </p>
+    </div>
+
+    <h3>1.1 Using FLS for Recommendations</h3>
+    <div class="card">
+        <div class="flow-container">
+            <div class="flow-box" style="border-color: var(--accent)">Current FLS</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Calculate base pace & distance</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-decision">Run type?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Apply type multipliers</div>
+        </div>
+
+        <table style="margin-top: 0.75rem">
+            <tr>
+                <th>Output</th>
+                <th>Formula</th>
+                <th>Example (FLS = 45)</th>
+            </tr>
+            <tr>
+                <td>Base pace (easy)</td>
+                <td>7:00 − (FLS × 2.5s)</td>
+                <td>5:07 min/km</td>
+            </tr>
+            <tr>
+                <td>Comfortable distance</td>
+                <td>3km + (FLS × 0.15)</td>
+                <td>9.75 km</td>
+            </tr>
+            <tr>
+                <td>Long run target</td>
+                <td>comfortable × (1.5 + FLS/200)</td>
+                <td>17.5 km</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3>1.2 Marathon Timeline from FLS</h3>
+    <div class="card">
+        <div class="formula">
+            weeks_to_marathon = log(42.195 / comfortable_distance) / log(1 + weekly_FLS_gain/100)<br>
+            weekly_FLS_gain ≈ 0.5 × consistency_multiplier × avg_effort_dampener
+        </div>
+
+        <div class="viz-container" style="height: 50px; margin-top: 0.75rem">
+            <div class="viz-bar" style="height: 20%; background: var(--error)"><span style="position: absolute; bottom: -18px; font-size: 0.6rem">FLS 20<br>16 wks</span></div>
+            <div class="viz-bar" style="height: 35%; background: var(--warn)"><span style="position: absolute; bottom: -18px; font-size: 0.6rem">FLS 35<br>12 wks</span></div>
+            <div class="viz-bar" style="height: 55%; background: var(--info)"><span style="position: absolute; bottom: -18px; font-size: 0.6rem">FLS 55<br>8 wks</span></div>
+            <div class="viz-bar" style="height: 80%; background: var(--accent)"><span style="position: absolute; bottom: -18px; font-size: 0.6rem">FLS 80<br>4 wks</span></div>
+        </div>
+        <p class="small muted" style="margin-top: 1.25rem; margin-bottom: 0.5rem">
+            Higher FLS = faster weekly gains + shorter long runs needed. FLS 70+ indicates marathon-ready conditioning.
+        </p>
+    </div>
+
+    <h2>2. Input Signals</h2>
     <div class="grid-2">
         <div class="card compact">
             <h3>Training History (Auto)</h3>
@@ -235,39 +336,39 @@
                 <span class="metric-value">14.2 km</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Avg weekly</span>
+                <span class="metric-label">Recent avg weekly</span>
                 <span class="metric-value">18 km</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Week runs</span>
+                <span class="metric-label">Runs this week</span>
                 <span class="metric-value">2 / 4 <span class="pill pill-green">On track</span></span>
             </div>
         </div>
         
         <div class="card compact">
-            <h3>User Settings</h3>
+            <h3>Effort Statistics</h3>
             <div class="metric-row">
-                <span class="metric-label">Min days</span>
-                <span class="metric-value">2</span>
+                <span class="metric-label">Recent avg effort</span>
+                <span class="metric-value">5.2 / 10</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Max days</span>
-                <span class="metric-value">4</span>
+                <span class="metric-label">High effort count</span>
+                <span class="metric-value">1 (8+) <span class="pill pill-warn">Watch</span></span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Last run</span>
-                <span class="metric-value">2 days ago</span>
+                <span class="metric-label">Max recent effort</span>
+                <span class="metric-value">8 / 10</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Week anchor</span>
-                <span class="metric-value"><span class="status-dot dot-yellow"></span> Long run pending</span>
+                <span class="metric-label">Fatigue status</span>
+                <span class="metric-value"><span class="status-dot dot-green"></span> Manageable</span>
             </div>
         </div>
     </div>
 
-    <h2>2. Effort Capture Model</h2>
+    <h2>3. Effort Capture Model</h2>
     <div class="card">
-        <p class="small muted" style="margin-bottom: 0.75rem">Post-run: User selects perceived effort (1-10). This becomes the primary feedback signal.</p>
+        <p class="small muted" style="margin-bottom: 0.75rem">Post-run: User selects perceived effort (1-10). Primary feedback signal for all adaptations.</p>
         
         <div class="effort-scale">
             <div class="effort-block" style="background: #22c55e; color: #000">1-2</div>
@@ -280,33 +381,47 @@
         <table style="margin-top: 0.75rem">
             <tr>
                 <th>Effort</th>
-                <th>Interpretation</th>
-                <th>Model Response</th>
+                <th>Single Run Effect</th>
+                <th>Sustained Pattern Effect</th>
             </tr>
             <tr>
                 <td><span class="pill pill-green">1-4</span></td>
-                <td>Comfortable, conversational</td>
-                <td>Progress distance +5% next similar run</td>
+                <td>Progress +1.5km next long</td>
+                <td>Aggressive progression enabled</td>
             </tr>
             <tr>
                 <td><span class="pill pill-blue">5-6</span></td>
-                <td>Steady, some focus required</td>
-                <td>Maintain current progression</td>
+                <td>Maintain current level</td>
+                <td>Steady progression</td>
             </tr>
             <tr>
                 <td><span class="pill pill-warn">7-8</span></td>
-                <td>Hard, approaching limit</td>
-                <td>Hold distance, add recovery day</td>
+                <td>Hold distance, +1 easy day</td>
+                <td>Reduce 10-15% all distances</td>
             </tr>
             <tr>
-                <td><span class="pill" style="background: rgba(239, 68, 68, 0.2); color: var(--error)">9-10</span></td>
-                <td>Maximum effort, struggled</td>
-                <td>Reduce -10%, force rest buffer</td>
+                <td><span class="pill" style="background: rgba(239, 68, 68, 0.2); color: var(--error)">9</span></td>
+                <td>Hold, +2 easy days</td>
+                <td>Reduce 20%, force rest</td>
+            </tr>
+            <tr>
+                <td><span class="pill" style="background: rgba(185, 28, 28, 0.3); color: var(--error)">10</span></td>
+                <td>Reduce 15% next run</td>
+                <td>Reduce 40%, block until rest</td>
             </tr>
         </table>
+        
+        <div class="formula" style="margin-top: 0.75rem">
+            effort_multiplier = f(recent_avg_effort, max_effort, high_effort_count)<br>
+            <br>
+            // Sustained high effort triggers<br>
+            3+ runs at 9/10 → multiplier = 0.6 (40% reduction)<br>
+            4+ runs at 8/10 → multiplier = 0.7 (30% reduction)<br>
+            avg effort ≥ 8 → multiplier = 0.75 (25% reduction)
+        </div>
     </div>
 
-    <h2>3. Recommendation Decision Tree</h2>
+    <h2>4. Recommendation Decision Tree</h2>
     <div class="card">
         <div class="flow-container">
             <div class="flow-decision">Run today?</div>
@@ -331,109 +446,194 @@
         </div>
         <div class="flow-container" style="margin-top: 0.5rem">
             <span style="width: 140px"></span>
-            <div class="flow-decision">Weekly anchor missing?</div>
+            <div class="flow-decision">Extreme fatigue?<br><small>(3× 9/10 or avg ≥ 8)</small></div>
             <span class="flow-arrow">→</span>
-            <div class="flow-box" style="border-color: var(--info)">Recommend anchor</div>
+            <div class="flow-box" style="border-color: var(--error)">Block: mandatory rest</div>
         </div>
         <div class="flow-container" style="margin-top: 0.5rem">
-            <span style="width: 165px"></span>
+            <span style="width: 185px"></span>
             <span class="flow-arrow">↓ No</span>
         </div>
         <div class="flow-container" style="margin-top: 0.5rem">
-            <span style="width: 165px"></span>
+            <span style="width: 185px"></span>
+            <div class="flow-decision">Weekly anchor missing?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box" style="border-color: var(--info)">Recommend anchor<br><small>(with effort reduction)</small></div>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 210px"></span>
+            <span class="flow-arrow">↓ No</span>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 210px"></span>
             <div class="flow-decision">Recent hard effort?</div>
             <span class="flow-arrow">→</span>
             <div class="flow-box" style="border-color: var(--warn)">Recovery run</div>
         </div>
         <div class="flow-container" style="margin-top: 0.5rem">
-            <span style="width: 190px"></span>
+            <span style="width: 235px"></span>
             <span class="flow-arrow">↓ No</span>
         </div>
         <div class="flow-container" style="margin-top: 0.5rem">
-            <span style="width: 190px"></span>
+            <span style="width: 235px"></span>
             <div class="flow-box">Progression run</div>
         </div>
     </div>
 
-    <h2>4. Adaptive Progression Engine</h2>
-    <div class="card">
-        <h3>Long Run Progression</h3>
-        <div class="formula">
-            next_long = min(current_long + Δ, 34km)<br>
-            Δ = 1.5km × effort_multiplier × consistency_factor
+    <h2>5. Scenario Examples</h2>
+    <div class="card compact">
+        <p class="small muted" style="margin-bottom: 1rem">Tested scenarios showing expected model behavior</p>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 1: Complete Beginner</div>
+            <div class="scenario-desc">No history, starting distance = 3km, min=2</div>
+            <div class="scenario-result">→ Short anchor: 3km @ easy</div>
         </div>
         
-        <div class="two-col">
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 2: Experienced Starter</div>
+            <div class="scenario-desc">No history, starting distance = 8km, min=2</div>
+            <div class="scenario-result">→ Short anchor: 8km @ easy (not 3km!)</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 3: Short Done, Need Long</div>
+            <div class="scenario-desc">Did 3km easy Monday, today is Wednesday, min=2</div>
+            <div class="scenario-result">→ Long anchor: 4.5km @ steady (1.5× starting)</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 4: Both Anchors Done, Want Extra</div>
+            <div class="scenario-desc">Completed 3km + 4.5km this week, min=2 met, max=4</div>
+            <div class="scenario-result">→ Progression: ~2.7km @ steady (60% of longest)</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 5: Sustained High Effort (CRITICAL)</div>
+            <div class="scenario-desc">Last 3 runs: 10/10, 9/10, 10/10. Weekly min already met.</div>
+            <div class="scenario-result">→ BLOCK: No recommendation. Mandatory rest period.</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 6: High Effort But Min Not Met</div>
+            <div class="scenario-desc">Only 1 run this week at 9/10, min=2, long anchor still needed</div>
+            <div class="scenario-result">→ Long anchor: 4.5km × 0.85 = ~3.8km (reduced due to effort)</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 7: Two Hard Runs in 3 Days</div>
+            <div class="scenario-desc">Min=3 met, had 9/10 and 8/10 runs within 72 hours</div>
+            <div class="scenario-result">→ Recovery: ~2km @ very easy</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 8: Easy Week Progression</div>
+            <div class="scenario-desc">Last 4 runs all 3-4/10 effort, longest was 10km</div>
+            <div class="scenario-result">→ Long anchor: 11.5km (+1.5km progression)</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 9: Moderate Week Maintenance</div>
+            <div class="scenario-desc">Last 4 runs all 5-6/10 effort, longest was 10km</div>
+            <div class="scenario-result">→ Long anchor: 10.5km (+0.5km, conservative)</div>
+        </div>
+        
+        <div class="scenario">
+            <div class="scenario-header">SCENARIO 10: First Run After Rest Week</div>
+            <div class="scenario-desc">3× 10/10 two weeks ago, rested full week, min=2</div>
+            <div class="scenario-result">→ Short anchor: 3km @ easy (cautious restart)</div>
+        </div>
+    </div>
+
+    <h2>6. Adaptive Progression Engine</h2>
+    <div class="card">
+        <h3>Distance Calculation with Starting Point</h3>
+        <div class="formula">
+            base_distance = max(starting_distance, historical_longest_run)<br>
+            effort_multiplier = 1.0<br>
+            <br>
+            // Apply sustained effort reduction<br>
+            if (avg_effort_last_7_runs ≥ 8) effort_multiplier = 0.75<br>
+            if (count_9plus_effort ≥ 3) effort_multiplier = 0.60<br>
+            if (count_8plus_effort ≥ 4) effort_multiplier = 0.70<br>
+            <br>
+            recommended_distance = base_distance × effort_multiplier<br>
+            <br>
+            // Weekly anchor bounds<br>
+            short_anchor = max(2km, comfortable_distance × 0.8 × effort_multiplier)<br>
+            long_anchor = max(comfortable_distance × 1.5, longest_run + progression) × effort_multiplier
+        </div>
+        
+        <div class="two-col" style="margin-top: 0.75rem">
             <div>
-                <p class="small muted">Effort multiplier</p>
+                <p class="small muted">Effort-Based Multiplier</p>
                 <table>
-                    <tr><td>Effort 1-4</td><td>1.2</td></tr>
-                    <tr><td>Effort 5-6</td><td>1.0</td></tr>
-                    <tr><td>Effort 7-8</td><td>0.5</td></tr>
-                    <tr><td>Effort 9-10</td><td>0.0 (hold)</td></tr>
+                    <tr><td>3+ runs at 10/10</td><td>0.60 (-40%)</td></tr>
+                    <tr><td>4+ runs at 8+/10</td><td>0.70 (-30%)</td></tr>
+                    <tr><td>Avg effort ≥ 8</td><td>0.75 (-25%)</td></tr>
+                    <tr><td>Max effort = 10</td><td>0.80 (-20%)</td></tr>
+                    <tr><td>Max effort = 9</td><td>0.85 (-15%)</td></tr>
+                    <tr><td>Max effort = 8</td><td>0.90 (-10%)</td></tr>
+                    <tr><td>Effort 7</td><td>0.95 (-5%)</td></tr>
+                    <tr><td>Effort ≤ 6</td><td>1.00 (full)</td></tr>
                 </table>
             </div>
             <div>
-                <p class="small muted">Consistency factor (28-day)</p>
-                <div class="viz-container" style="height: 40px">
-                    <div class="viz-bar" style="height: 20%"></div>
-                    <div class="viz-bar" style="height: 35%"></div>
-                    <div class="viz-bar" style="height: 45%"></div>
-                    <div class="viz-bar" style="height: 60%"></div>
-                    <div class="viz-bar" style="height: 75%"></div>
-                    <div class="viz-bar" style="height: 90%"></div>
-                    <div class="viz-bar" style="height: 100%"></div>
-                </div>
-                <p class="small" style="margin-top: 0.25rem">Runs/wk: 1.5 → 0.8 penalty</p>
+                <p class="small muted">Progression Rate by Effort</p>
+                <table>
+                    <tr><td>Effort ≤ 4</td><td>+1.5km</td></tr>
+                    <tr><td>Effort 5-6</td><td>+0.5km</td></tr>
+                    <tr><td>Effort 7-8</td><td>0km (hold)</td></tr>
+                    <tr><td>Effort 9-10</td><td>0km (hold or reduce)</td></tr>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <h3>Weekly Volume Adaptation</h3>
-        <div class="formula">
-            target_weekly = max(12km, recent_4wk_avg × (1 + effort_trend/20))<br>
-            effort_trend = Σ(last_4_effort_ratings) / 4
-        </div>
-        
-        <p class="small muted" style="margin-top: 0.5rem">If average effort > 7.5 for 2+ consecutive weeks, volume plateaus regardless of schedule.</p>
-    </div>
-
-    <h2>5. Recovery Intelligence</h2>
+    <h2>7. Recovery Intelligence</h2>
     <div class="grid-2">
         <div class="card compact">
             <h3>Auto-Recovery Triggers</h3>
             <div class="metric-row">
                 <span class="status-dot dot-red"></span>
-                <span>Effort 9-10 yesterday</span>
+                <span>3+ runs at 9-10/10 → Force rest</span>
             </div>
             <div class="metric-row">
                 <span class="status-dot dot-red"></span>
-                <span>Two 8+ efforts in 3 days</span>
+                <span>Avg effort ≥ 8 over 7 runs → Force rest</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-red"></span>
+                <span>Two 8+ efforts in 3 days → Recovery only</span>
             </div>
             <div class="metric-row">
                 <span class="status-dot dot-yellow"></span>
-                <span>Long run +24h, effort 7+</span>
+                <span>Effort 9-10 yesterday → 48h rest</span>
             </div>
             <div class="metric-row">
-                <span class="status-dot dot-blue"></span>
-                <span>3+ consecutive run days</span>
+                <span class="status-dot dot-yellow"></span>
+                <span>Long run +24h, effort 7+ → Recovery</span>
             </div>
         </div>
         
         <div class="card compact">
             <h3>Recovery Run Formula</h3>
             <div class="formula" style="font-size: 0.8rem">
-                distance = max(3km, recent_avg × 0.4)<br>
-                max(20min, comfortable pace)
+                recovery_distance = max(<br>
+                &nbsp;&nbsp;2km,<br>
+                &nbsp;&nbsp;starting_distance × 0.5 × effort_multiplier<br>
+                )<br>
+                <br>
+                pace = comfortable_pace + 1 min/km<br>
+                intensity = "easy" (conversational)
             </div>
-            <p class="small muted" style="margin-top: 0.5rem">Recovery never exceeds 40% of recent average run distance. Minimum 3km to maintain rhythm.</p>
+            <p class="small muted" style="margin-top: 0.5rem">Recovery runs cap at 50% of starting distance, never less than 2km.</p>
         </div>
     </div>
 
-    <h2>6. Marathon Readiness Estimation</h2>
+    <h2>8. Marathon Readiness Estimation</h2>
     <div class="card">
-        <p class="small muted" style="margin-bottom: 0.75rem">Comfort (7/10 effort) readiness requires hitting both weekly volume and long run thresholds.</p>
+        <p class="small muted" style="margin-bottom: 0.75rem">Estimates from <em>current</em> fitness level (starting point + progression), not from zero.</p>
         
         <table>
             <tr>
@@ -472,82 +672,87 @@
             weeks_to_ready = max(<br>
             &nbsp;&nbsp;(target_weekly - current_weekly) / 3,<br>
             &nbsp;&nbsp;(target_long - current_long) / 1.5<br>
-            )
+            )<br>
+            <br>
+            current_weekly = max(starting_distance × starting_runs, recent_4wk_avg)<br>
+            current_long = max(starting_distance × 1.5, historical_longest_run)
         </div>
     </div>
 
-    <h2>7. Real Adaptation Example</h2>
+    <h2>9. Real Adaptation Example</h2>
     <div class="card">
-        <div class="progress-chain">
-            <span class="chain-link">Week 1: 3km @ effort 3</span>
-            <span class="chain-arrow">→</span>
-            <span class="chain-link">+20% → 4km</span>
-        </div>
-        <div class="progress-chain" style="margin-top: 0.5rem">
-            <span class="chain-link">Week 2: 4km @ effort 4</span>
-            <span class="chain-arrow">→</span>
-            <span class="chain-link">+15% → 5km</span>
-        </div>
-        <div class="progress-chain" style="margin-top: 0.5rem">
-            <span class="chain-link">Week 3: 5km @ effort 7</span>
-            <span class="chain-arrow">→</span>
-            <span class="chain-link">hold → 5km</span>
-        </div>
-        <div class="progress-chain" style="margin-top: 0.5rem">
-            <span class="chain-link">Week 4: 5km @ effort 8</span>
-            <span class="chain-arrow">→</span>
-            <span class="chain-link">-10% → 4.5km + rest</span>
-        </div>
-        <div class="progress-chain" style="margin-top: 0.5rem">
-            <span class="chain-link">Week 5: 4.5km @ effort 5</span>
-            <span class="chain-arrow">→</span>
-            <span class="chain-link">resume → 6km</span>
-        </div>
+        <p class="small muted" style="margin-bottom: 0.75rem">Starting point: 5km comfortable, 2 runs/week. Target: marathon-ready.</p>
         
-        <p class="small muted" style="margin-top: 0.75rem">The model backpedals on volume when effort spikes, preventing overtraining. Progression resumes when sustainable effort returns.</p>
+        <table>
+            <tr>
+                <th>Week</th>
+                <th>Run</th>
+                <th>Distance</th>
+                <th>Effort</th>
+                <th>Model Response</th>
+            </tr>
+            <tr><td>1</td><td>Short</td><td>5km</td><td>3/10</td><td>Progress +1.5km</td></tr>
+            <tr><td>1</td><td>Long</td><td>7.5km</td><td>4/10</td><td>Progress +1.5km</td></tr>
+            <tr><td>2</td><td>Short</td><td>5km</td><td>3/10</td><td>Maintain</td></tr>
+            <tr><td>2</td><td>Long</td><td>9km</td><td>5/10</td><td>+0.5km (moderate)</td></tr>
+            <tr><td>3</td><td>Short</td><td>5km</td><td>4/10</td><td>Maintain</td></tr>
+            <tr><td>3</td><td>Long</td><td>9.5km</td><td>7/10</td><td>Hold (hard)</td></tr>
+            <tr><td>4</td><td>Short</td><td>4.5km</td><td>6/10</td><td>-10% (cautious)</td></tr>
+            <tr><td>4</td><td>Long</td><td>9.5km</td><td>8/10</td><td>Hold, reduce next</td></tr>
+            <tr><td>5</td><td>Short</td><td>4km</td><td>4/10</td><td>-20% (recovery)</td></tr>
+            <tr><td>5</td><td>Rest</td><td>-</td><td>-</td><td>Forced by 2× 8/10</td></tr>
+            <tr><td>6</td><td>Short</td><td>5km</td><td>3/10</td><td>Resume progression</td></tr>
+            <tr><td>6</td><td>Long</td><td>11km</td><td>4/10</td><td>+1.5km (easy week)</td></tr>
+        </table>
+        
+        <p class="small muted" style="margin-top: 0.75rem">The model detects the 7/10 and 8/10 efforts in week 4, reduces distance in week 5, forces a rest day, then resumes progression when easy effort returns.</p>
     </div>
 
-    <h2>8. Implementation Notes</h2>
+    <h2>10. Implementation Notes</h2>
     <div class="grid-2">
         <div class="card compact">
             <h3>State Store Per User</h3>
             <div class="metric-row">
-                <span class="metric-label">Base volume</span>
-                <span class="metric-value">12 km</span>
+                <span class="metric-label">FLS (hidden)</span>
+                <span class="metric-value">Calc from first run</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Long target</span>
-                <span class="metric-value">6 km → 34 km</span>
+                <span class="metric-label">Run history</span>
+                <span class="metric-value">Distance, time, effort</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Min/max days</span>
+                <span class="metric-value">User preference</span>
             </div>
             <div class="metric-row">
                 <span class="metric-label">Effort buffer</span>
-                <span class="metric-value">Last 4 runs</span>
+                <span class="metric-value">Last 7 runs</span>
             </div>
         </div>
-        
+
         <div class="card compact">
-            <h3>Recalculation Events</h3>
+            <h3>FLS Recalculation Events</h3>
             <div class="metric-row">
                 <span class="status-dot dot-green"></span>
-                <span>User taps "Tell me what to do"</span>
+                <span>Run logged with effort → FLS update</span>
             </div>
             <div class="metric-row">
                 <span class="status-dot dot-green"></span>
-                <span>Run logged with effort</span>
+                <span>User taps "What to do" → Read FLS</span>
             </div>
             <div class="metric-row">
                 <span class="status-dot dot-green"></span>
-                <span>Settings changed</span>
+                <span>Run deleted → Recalc FLS from history</span>
             </div>
             <div class="metric-row">
-                <span class="status-dot dot-green"></span>
-                <span>Run deleted</span>
+                <span class="status-dot dot-blue"></span>
+                <span>Weekly → Marathon ETA update</span>
             </div>
         </div>
     </div>
 
     <div class="card compact" style="margin-top: 1rem; text-align: center">
-        <p class="small muted">Model v1.0 | Computed on-demand | No future schedules stored</p>
+        <p class="small muted">Model v2.1 | FLS-centric | Calculated from real run data | No future schedules stored</p>
     </div>
 </body>
 </html>
