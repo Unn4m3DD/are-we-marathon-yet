@@ -70,7 +70,7 @@ export function SettingsClient({ userId, profile }: SettingsClientProps) {
               {formatFLS(profile.currentFLS)}
             </p>
             <p className="text-xs text-zinc-500 mt-2">
-              Your FLS is calculated from every run you log—distance, pace, and effort. It updates automatically and drives all workout recommendations.
+              Your FLS is calculated from every run you log—distance, speed, and effort. It updates automatically and drives all workout recommendations.
             </p>
           </div>
         </section>

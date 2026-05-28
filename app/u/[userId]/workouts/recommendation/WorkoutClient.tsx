@@ -20,10 +20,8 @@ function formatDuration(seconds: number): string {
   return `${mins} min`;
 }
 
-function formatPace(secondsPerKm: number): string {
-  const mins = Math.floor(secondsPerKm / 60);
-  const secs = Math.round(secondsPerKm % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+function formatSpeed(kmh: number): string {
+  return `${kmh.toFixed(1)} km/h`;
 }
 
 export function WorkoutClient({ userId, recommendation }: WorkoutClientProps) {
@@ -199,8 +197,8 @@ export function WorkoutClient({ userId, recommendation }: WorkoutClientProps) {
             <span className="font-semibold">{formatDuration(recommendation.targetDurationSeconds)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-zinc-500">Target Pace</span>
-            <span className="font-semibold">{formatPace(recommendation.targetPaceSeconds)}/km</span>
+            <span className="text-sm text-zinc-500">Target Speed</span>
+            <span className="font-semibold">{formatSpeed(recommendation.targetSpeedKmh)}</span>
           </div>
         </div>
 

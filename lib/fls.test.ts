@@ -3,10 +3,12 @@ import {
   calculateInitialFLS,
   updateFLS,
   getParametersFromFLS,
-  getExpectedPace,
+  getExpectedSpeed,
   getExpectedDistance,
   recalculateFLSFromHistory,
   calculateMarathonWeeks,
+  speedToPace,
+  paceToSpeed,
 } from './fls';
 import type { Run } from './types';
 
@@ -28,17 +30,16 @@ function createRun(
 
 describe('calculateInitialFLS', () => {
   it('calculates FLS from first run data', () => {
-    // 5km in 30 min (6:00/km) with effort 5
+    // 5km in 30 min (10 km/h) with effort 5
     const fls = calculateInitialFLS(5, 30 * 60, 5);
 
-    // Should be roughly: 25 * 1.0 * (7/6) * (6/8) ≈ 22
     expect(fls).toBeGreaterThan(15);
     expect(fls).toBeLessThan(35);
   });
 
-  it('faster pace = higher FLS', () => {
-    const flsSlow = calculateInitialFLS(5, 35 * 60, 5); // 7:00/km
-    const flsFast = calculateInitialFLS(5, 25 * 60, 5); // 5:00/km
+  it('faster speed = higher FLS', () => {
+    const flsSlow = calculateInitialFLS(5, 35 * 60, 5); // ~8.6 km/h
+    const flsFast = calculateInitialFLS(5, 25 * 60, 5); // 12 km/h
 
     expect(flsFast).toBeGreaterThan(flsSlow);
   });
@@ -50,9 +51,9 @@ describe('calculateInitialFLS', () => {
     expect(flsEasy).toBeGreaterThan(flsHard);
   });
 
-  it('longer distance at same pace/effort = higher FLS', () => {
-    const flsShort = calculateInitialFLS(3, 18 * 60, 5); // 3km at 6:00
-    const flsLong = calculateInitialFLS(10, 60 * 60, 5); // 10km at 6:00
+  it('longer distance at same speed/effort = higher FLS', () => {
+    const flsShort = calculateInitialFLS(3, 18 * 60, 5); // 3km at 10 km/h
+    const flsLong = calculateInitialFLS(10, 60 * 60, 5); // 10km at 10 km/h
 
     expect(flsLong).toBeGreaterThan(flsShort);
   });
@@ -61,42 +62,43 @@ describe('calculateInitialFLS', () => {
 describe('updateFLS', () => {
   it('exceeding targets increases FLS', () => {
     const currentFLS = 30;
-    // Run significantly exceeds expectations: 10km instead of 6km, at 5:00/km pace
+    // Run significantly exceeds expectations: 10km instead of 6km, at 12 km/h
     // with low effort (4/10) - this should boost FLS
-    const run = createRun(new Date(), 10, 50, 4); // 10km at 5:00/km
+    const run = createRun(new Date(), 10, 50, 4); // 10km at 12 km/h
 
-    // Expected for FLS 30: ~7.5km comfortable
+    // Expected for FLS 30: ~7.5km comfortable, ~10.45 km/h speed
     const expectedDistance = 7.5;
-    const expectedPace = 7 * 60 - 30 * 1.8; // ~366s (6:06/km)
+    const expectedSpeed = 8.5 + 30 * 0.065; // ~10.45 km/h
 
-    const result = updateFLS(currentFLS, run, expectedDistance, expectedPace);
+    const result = updateFLS(currentFLS, run, expectedDistance, expectedSpeed);
 
-    // Exceeded distance target (10 > 7.5), faster pace (300s < 366s), easy effort -> positive delta
+    // Exceeded distance target (10 > 7.5), faster speed (12 > 10.45), easy effort -> positive delta
     expect(result.newFLS).toBeGreaterThan(currentFLS);
   });
 
   it('underperforming decreases FLS', () => {
     const currentFLS = 40;
-    const run = createRun(new Date(), 5, 50, 9); // Slower than expected, hard effort
+    const run = createRun(new Date(), 5, 50, 9); // 6 km/h - slower than expected
 
     const expectedDistance = 8; // Expected more
-    const expectedPace = 6 * 60; // Expected faster
+    const expectedSpeed = 8.5 + 40 * 0.065; // ~11.1 km/h
 
-    const result = updateFLS(currentFLS, run, expectedDistance, expectedPace);
+    const result = updateFLS(currentFLS, run, expectedDistance, expectedSpeed);
 
-    // Underperformed on distance and pace, high effort -> negative delta
+    // Underperformed on distance and speed, high effort -> negative delta
     expect(result.newFLS).toBeLessThan(currentFLS);
   });
 
   it('meeting targets with moderate effort maintains FLS', () => {
     const currentFLS = 35;
-    // Create a run that exactly matches expected values
+    // Expected values for FLS 35
     const expectedDistance = 3 + 35 * 0.15; // ~8.25km
-    const expectedPace = 420 - 35 * 1.8; // ~357s (5:57/km)
+    const expectedSpeed = 8.5 + 35 * 0.065; // ~10.775 km/h
+    const expectedDurationMinutes = expectedDistance / expectedSpeed * 60;
 
-    const run = createRun(new Date(), expectedDistance, expectedDistance * expectedPace / 60, 5);
+    const run = createRun(new Date(), expectedDistance, expectedDurationMinutes, 5);
 
-    const result = updateFLS(currentFLS, run, expectedDistance, expectedPace);
+    const result = updateFLS(currentFLS, run, expectedDistance, expectedSpeed);
 
     // Should be close to current (small change due to effort factor)
     expect(Math.abs(result.newFLS - currentFLS)).toBeLessThan(2);
@@ -108,10 +110,10 @@ describe('updateFLS', () => {
     const runHard = createRun(new Date(), 10, 50, 8); // Same performance, hard effort
 
     const expectedDistance = 7;
-    const expectedPace = 380;
+    const expectedSpeed = 8.5 + 30 * 0.065; // ~10.45 km/h
 
-    const resultEasy = updateFLS(currentFLS, runEasy, expectedDistance, expectedPace);
-    const resultHard = updateFLS(currentFLS, runHard, expectedDistance, expectedPace);
+    const resultEasy = updateFLS(currentFLS, runEasy, expectedDistance, expectedSpeed);
+    const resultHard = updateFLS(currentFLS, runHard, expectedDistance, expectedSpeed);
 
     // Easy effort should have higher learning rate
     expect(resultEasy.learningRate).toBeGreaterThan(resultHard.learningRate);
@@ -119,11 +121,11 @@ describe('updateFLS', () => {
 });
 
 describe('getParametersFromFLS', () => {
-  it('higher FLS = faster base pace', () => {
+  it('higher FLS = faster base speed', () => {
     const paramsLow = getParametersFromFLS(20);
     const paramsHigh = getParametersFromFLS(70);
 
-    expect(paramsHigh.basePaceSeconds).toBeLessThan(paramsLow.basePaceSeconds);
+    expect(paramsHigh.baseSpeedKmh).toBeGreaterThan(paramsLow.baseSpeedKmh);
   });
 
   it('higher FLS = longer comfortable distance', () => {
@@ -147,26 +149,26 @@ describe('getParametersFromFLS', () => {
   });
 });
 
-describe('getExpectedPace', () => {
-  it('recovery pace is slower than easy', () => {
-    const recovery = getExpectedPace(40, 'recovery');
-    const easy = getExpectedPace(40, 'easy');
+describe('getExpectedSpeed', () => {
+  it('recovery speed is slower than easy', () => {
+    const recovery = getExpectedSpeed(40, 'recovery');
+    const easy = getExpectedSpeed(40, 'easy');
 
-    expect(recovery).toBeGreaterThan(easy);
+    expect(recovery).toBeLessThan(easy);
   });
 
-  it('steady pace is faster than easy', () => {
-    const easy = getExpectedPace(40, 'easy');
-    const steady = getExpectedPace(40, 'steady');
+  it('steady speed is faster than easy', () => {
+    const easy = getExpectedSpeed(40, 'easy');
+    const steady = getExpectedSpeed(40, 'steady');
 
-    expect(steady).toBeLessThan(easy);
+    expect(steady).toBeGreaterThan(easy);
   });
 
-  it('moderate pace is faster than steady', () => {
-    const steady = getExpectedPace(40, 'steady');
-    const moderate = getExpectedPace(40, 'moderate');
+  it('moderate speed is faster than steady', () => {
+    const steady = getExpectedSpeed(40, 'steady');
+    const moderate = getExpectedSpeed(40, 'moderate');
 
-    expect(moderate).toBeLessThan(steady);
+    expect(moderate).toBeGreaterThan(steady);
   });
 });
 
@@ -190,6 +192,29 @@ describe('getExpectedDistance', () => {
     const reduced = getExpectedDistance(40, 'easy', 0.7);
 
     expect(reduced).toBeLessThan(normal);
+  });
+});
+
+describe('speedToPace and paceToSpeed', () => {
+  it('converts speed to pace correctly', () => {
+    // 10 km/h = 6:00/km = 360 seconds
+    expect(speedToPace(10)).toBe(360);
+    // 12 km/h = 5:00/km = 300 seconds
+    expect(speedToPace(12)).toBe(300);
+  });
+
+  it('converts pace to speed correctly', () => {
+    // 6:00/km = 360 seconds = 10 km/h
+    expect(paceToSpeed(360)).toBe(10);
+    // 5:00/km = 300 seconds = 12 km/h
+    expect(paceToSpeed(300)).toBe(12);
+  });
+
+  it('round-trip conversion is accurate', () => {
+    const originalSpeed = 11.5;
+    const pace = speedToPace(originalSpeed);
+    const convertedSpeed = paceToSpeed(pace);
+    expect(convertedSpeed).toBeCloseTo(originalSpeed, 1);
   });
 });
 

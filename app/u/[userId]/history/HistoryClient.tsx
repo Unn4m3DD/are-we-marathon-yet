@@ -23,12 +23,10 @@ function formatDuration(seconds: number | null): string {
   return `${mins}m`;
 }
 
-function formatPace(distance: number, seconds: number): string {
-  if (!seconds || distance <= 0) return '--:--';
-  const paceSeconds = seconds / distance;
-  const mins = Math.floor(paceSeconds / 60);
-  const secs = Math.round(paceSeconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+function formatSpeed(distance: number, seconds: number): string {
+  if (!seconds || distance <= 0) return '0.0 km/h';
+  const speedKmh = (distance / seconds) * 3600;
+  return `${speedKmh.toFixed(1)} km/h`;
 }
 
 export function HistoryClient({ userId, runs }: HistoryClientProps) {
@@ -78,7 +76,7 @@ export function HistoryClient({ userId, runs }: HistoryClientProps) {
                     <p className="text-sm">{formatDuration(run.durationSeconds)}</p>
                     <p className="text-xs text-zinc-500">
                       {run.perceivedEffort ? `Effort ${run.perceivedEffort}/10 • ` : ''}
-                      Pace {formatPace(run.distance, run.durationSeconds)}/km
+                      Speed {formatSpeed(run.distance, run.durationSeconds)}
                     </p>
                   </div>
                   <button

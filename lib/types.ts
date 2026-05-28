@@ -36,7 +36,7 @@ export type RunType = 'easy' | 'steady' | 'moderate' | 'recovery' | 'long';
 export interface Recommendation {
   type: RunType;
   distance: number; // km
-  targetPaceSeconds: number; // seconds per km
+  targetSpeedKmh: number; // km/h
   targetDurationSeconds: number;
   description: string;
   reason: string;
@@ -57,7 +57,7 @@ export interface ReadinessEstimate {
 // FLS calculation parameters
 export interface FLSCalculation {
   distanceFactor: number;
-  paceFactor: number;
+  speedFactor: number;
   effortFactor: number;
   learningRate: number;
   delta: number;

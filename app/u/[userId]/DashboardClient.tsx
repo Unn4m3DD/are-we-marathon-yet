@@ -23,10 +23,8 @@ function formatDuration(seconds: number | null): string {
   return `${mins} min`;
 }
 
-function formatPace(secondsPerKm: number): string {
-  const mins = Math.floor(secondsPerKm / 60);
-  const secs = Math.round(secondsPerKm % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+function formatSpeed(kmh: number): string {
+  return `${kmh.toFixed(1)} km/h`;
 }
 
 export function DashboardClient({

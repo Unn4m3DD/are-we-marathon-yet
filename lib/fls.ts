@@ -1,10 +1,22 @@
 import type { Run, FLSCalculation } from './types';
 
 // FLS (Fitness Level Score) Engine
-// Core formula: FLS tracks aerobic fitness 0-100, calculated from distance, pace, and effort
+// Core formula: FLS tracks aerobic fitness 0-100, calculated from distance, speed, and effort
 
-const REFERENCE_PACE_SECONDS = 7 * 60; // 7:00 min/km baseline
+const REFERENCE_SPEED_KMH = 8.5; // ~7:00 min/km baseline = 8.5 km/h
 const INITIAL_FLS_BASE = 25; // Starting scale factor
+
+// Convert speed (km/h) to pace (seconds per km)
+export function speedToPace(speedKmh: number): number {
+  if (speedKmh <= 0) return 600; // Default to 10:00/km for invalid
+  return 3600 / speedKmh;
+}
+
+// Convert pace (seconds per km) to speed (km/h)
+export function paceToSpeed(paceSeconds: number): number {
+  if (paceSeconds <= 0) return 0;
+  return 3600 / paceSeconds;
+}
 
 // Calculate initial FLS from first run
 export function calculateInitialFLS(
@@ -12,12 +24,12 @@ export function calculateInitialFLS(
   durationSeconds: number,
   effort: number
 ): number {
-  const actualPaceSeconds = durationSeconds / distanceKm;
+  const actualSpeedKmh = (distanceKm / durationSeconds) * 3600;
   const distanceFactor = distanceKm / 5; // normalized to 5km
-  const paceFactor = REFERENCE_PACE_SECONDS / actualPaceSeconds;
+  const speedFactor = actualSpeedKmh / REFERENCE_SPEED_KMH;
   const effortFactor = (11 - effort) / 8; // effort 3 = 1.0, effort 9 = 0.25
 
-  const fls = INITIAL_FLS_BASE * distanceFactor * paceFactor * effortFactor;
+  const fls = INITIAL_FLS_BASE * distanceFactor * speedFactor * effortFactor;
   return Math.max(5, Math.min(50, fls)); // Clamp: 5 min, 50 max for first run
 }
 
@@ -26,17 +38,17 @@ export function updateFLS(
   currentFLS: number,
   run: Run,
   expectedDistance: number,
-  expectedPaceSeconds: number
+  expectedSpeedKmh: number
 ): FLSCalculation {
-  const actualPaceSeconds = run.durationSeconds / run.distance;
+  const actualSpeedKmh = (run.distance / run.durationSeconds) * 3600;
 
   // Performance factors: how did actual compare to expected?
   const distanceFactor = run.distance / expectedDistance;
-  const paceFactor = expectedPaceSeconds / actualPaceSeconds;
+  const speedFactor = actualSpeedKmh / expectedSpeedKmh;
   const effortFactor = (11 - run.perceivedEffort) / 10;
 
   // Combined performance delta (1.0 = met expectations)
-  const performanceDelta = distanceFactor * paceFactor * effortFactor - 1;
+  const performanceDelta = distanceFactor * speedFactor * effortFactor - 1;
 
   // Learning rate based on effort (high effort = noisy signal, low alpha)
   const learningRate = getLearningRate(run.perceivedEffort);
@@ -47,7 +59,7 @@ export function updateFLS(
 
   return {
     distanceFactor,
-    paceFactor,
+    speedFactor,
     effortFactor,
     learningRate,
     delta,
@@ -64,8 +76,9 @@ function getLearningRate(effort: number): number {
 
 // Derive training parameters from FLS
 export function getParametersFromFLS(fls: number) {
-  // Base easy pace: 7:00 at FLS 0, ~4:00 at FLS 100 (2.5s reduction per FLS point)
-  const basePaceSeconds = Math.max(240, 420 - fls * 1.8);
+  // Base easy speed: 8.5 km/h at FLS 0, ~15 km/h at FLS 100
+  // Speed increases by ~0.065 km/h per FLS point
+  const baseSpeedKmh = Math.min(16, 8.5 + fls * 0.065);
 
   // Comfortable distance: 3km at FLS 0, ~18km at FLS 100
   const comfortableDistance = 3 + fls * 0.15;
@@ -75,27 +88,27 @@ export function getParametersFromFLS(fls: number) {
   const longRunTarget = Math.min(34, comfortableDistance * longRunMultiplier);
 
   return {
-    basePaceSeconds,
+    baseSpeedKmh,
     comfortableDistance,
     longRunTarget,
   };
 }
 
-// Calculate expected pace for a given FLS and run type
-export function getExpectedPace(fls: number, type: 'easy' | 'steady' | 'moderate' | 'recovery'): number {
-  const { basePaceSeconds } = getParametersFromFLS(fls);
+// Calculate expected speed for a given FLS and run type (returns km/h)
+export function getExpectedSpeed(fls: number, type: 'easy' | 'steady' | 'moderate' | 'recovery'): number {
+  const { baseSpeedKmh } = getParametersFromFLS(fls);
 
   switch (type) {
     case 'recovery':
-      return basePaceSeconds + 30; // +30s per km
+      return baseSpeedKmh * 0.9; // 10% slower
     case 'easy':
-      return basePaceSeconds;
+      return baseSpeedKmh;
     case 'steady':
-      return basePaceSeconds - 15; // ~15s faster
+      return baseSpeedKmh * 1.05; // 5% faster
     case 'moderate':
-      return basePaceSeconds - 30; // ~30s faster
+      return baseSpeedKmh * 1.1; // 10% faster
     default:
-      return basePaceSeconds;
+      return baseSpeedKmh;
   }
 }
 
@@ -186,7 +199,7 @@ export function recalculateFLSFromHistory(runs: Run[]): number | null {
   // Update through each subsequent run
   for (let i = 1; i < sortedRuns.length; i++) {
     const run = sortedRuns[i];
-    const { comfortableDistance, basePaceSeconds } = getParametersFromFLS(fls);
+    const { comfortableDistance } = getParametersFromFLS(fls);
 
     // Determine what type of run this likely was based on distance ratio
     const distanceRatio = run.distance / comfortableDistance;
@@ -201,8 +214,8 @@ export function recalculateFLSFromHistory(runs: Run[]): number | null {
       expectedDistance = comfortableDistance * 1.5;
     }
 
-    const expectedPace = getExpectedPace(fls, type === 'long' ? 'steady' : type);
-    const update = updateFLS(fls, run, expectedDistance, expectedPace);
+    const expectedSpeed = getExpectedSpeed(fls, type === 'long' ? 'steady' : type);
+    const update = updateFLS(fls, run, expectedDistance, expectedSpeed);
     fls = update.newFLS;
   }
 

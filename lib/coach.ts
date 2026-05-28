@@ -2,7 +2,7 @@ import type { Run, AthleteProfile, Recommendation, WeeklyProgress, ReadinessEsti
 import {
   getParametersFromFLS,
   getExpectedDistance,
-  getExpectedPace,
+  getExpectedSpeed,
   getReadinessLevels,
   calculateInitialFLS,
   updateFLS,
@@ -176,8 +176,8 @@ export function calculateFLSAfterRun(
     expectedDistance = comfortableDistance;
   }
 
-  const expectedPace = getExpectedPace(currentFLS, type === 'long' ? 'steady' : type);
-  const calculation = updateFLS(currentFLS, run, expectedDistance, expectedPace);
+  const expectedSpeed = getExpectedSpeed(currentFLS, type === 'long' ? 'steady' : type);
+  const calculation = updateFLS(currentFLS, run, expectedDistance, expectedSpeed);
 
   return { newFLS: calculation.newFLS, calculation };
 }
@@ -202,7 +202,7 @@ export function generateRecommendation(
 
   // Determine FLS-based parameters
   const fls = currentFLS ?? 15; // Use low default if no FLS yet
-  const { comfortableDistance, longRunTarget, basePaceSeconds } = getParametersFromFLS(fls);
+  const { comfortableDistance, longRunTarget, baseSpeedKmh } = getParametersFromFLS(fls);
 
   // Extreme fatigue check
   const extremeFatigue = effortStats.count9plus >= 3 || effortStats.avg >= 9;
@@ -215,12 +215,12 @@ export function generateRecommendation(
     }
     // Minimal run to complete structure if needed
     const distance = Math.max(3, comfortableDistance * 0.4 * effortMultiplier);
-    const pace = basePaceSeconds + 30;
+    const speed = baseSpeedKmh * 0.9; // Recovery speed
     return {
       type: 'recovery',
       distance: Math.round(distance * 10) / 10,
-      targetPaceSeconds: Math.round(pace),
-      targetDurationSeconds: Math.round(distance * pace),
+      targetSpeedKmh: Math.round(speed * 10) / 10,
+      targetDurationSeconds: Math.round((distance / speed) * 3600),
       description: 'Very easy recovery. You have been pushing hard—take it slow.',
       reason: 'Fatigue management: restart after overreaching',
     };
@@ -231,12 +231,12 @@ export function generateRecommendation(
     // First run of the week
     if (progress.runsThisWeek === 0) {
       const distance = getExpectedDistance(fls, 'easy', effortMultiplier);
-      const pace = getExpectedPace(fls, 'easy');
+      const speed = getExpectedSpeed(fls, 'easy');
       return {
         type: 'easy',
         distance,
-        targetPaceSeconds: Math.round(pace),
-        targetDurationSeconds: Math.round(distance * pace),
+        targetSpeedKmh: Math.round(speed * 10) / 10,
+        targetDurationSeconds: Math.round((distance / speed) * 3600),
         description: 'Easy conversational pace. Establish your weekly rhythm.',
         reason: 'Weekly easy run',
       };
@@ -245,12 +245,12 @@ export function generateRecommendation(
     // Second run: long if not done yet
     if (!progress.longRunDone && progress.runsThisWeek === 1) {
       const distance = Math.min(MAX_LONG_RUN_KM, longRunTarget * effortMultiplier);
-      const pace = getExpectedPace(fls, 'steady');
+      const speed = getExpectedSpeed(fls, 'steady');
       return {
         type: 'long',
         distance: Math.round(distance * 10) / 10,
-        targetPaceSeconds: Math.round(pace),
-        targetDurationSeconds: Math.round(distance * pace),
+        targetSpeedKmh: Math.round(speed * 10) / 10,
+        targetDurationSeconds: Math.round((distance / speed) * 3600),
         description: 'Weekly long run. Start easy, settle into a steady rhythm.',
         reason: 'Weekly long run',
       };
@@ -258,12 +258,12 @@ export function generateRecommendation(
 
     // Additional runs to meet minimum
     const distance = getExpectedDistance(fls, 'easy', effortMultiplier);
-    const pace = getExpectedPace(fls, 'easy');
+    const speed = getExpectedSpeed(fls, 'easy');
     return {
       type: 'easy',
       distance,
-      targetPaceSeconds: Math.round(pace),
-      targetDurationSeconds: Math.round(distance * pace),
+      targetSpeedKmh: Math.round(speed * 10) / 10,
+      targetDurationSeconds: Math.round((distance / speed) * 3600),
       description: 'Easy run to build weekly consistency.',
       reason: 'Complete weekly minimum',
     };
@@ -275,12 +275,12 @@ export function generateRecommendation(
 
   if (shouldRecover || minMetWithFatigue) {
     const distance = getExpectedDistance(fls, 'recovery', effortMultiplier);
-    const pace = getExpectedPace(fls, 'recovery');
+    const speed = getExpectedSpeed(fls, 'recovery');
     return {
       type: 'recovery',
       distance,
-      targetPaceSeconds: Math.round(pace),
-      targetDurationSeconds: Math.round(distance * pace),
+      targetSpeedKmh: Math.round(speed * 10) / 10,
+      targetDurationSeconds: Math.round((distance / speed) * 3600),
       description: 'Active recovery. Focus on relaxation and easy breathing.',
       reason: 'Recovery after hard efforts',
     };
@@ -289,12 +289,12 @@ export function generateRecommendation(
   // Progression run: add volume
   const type: 'easy' | 'steady' = effortStats.avg <= 5 ? 'steady' : 'easy';
   const distance = getExpectedDistance(fls, type, effortMultiplier);
-  const pace = getExpectedPace(fls, type);
+  const speed = getExpectedSpeed(fls, type);
   return {
     type,
     distance,
-    targetPaceSeconds: Math.round(pace),
-    targetDurationSeconds: Math.round(distance * pace),
+    targetSpeedKmh: Math.round(speed * 10) / 10,
+    targetDurationSeconds: Math.round((distance / speed) * 3600),
     description: type === 'steady'
       ? 'Steady controlled effort. Build aerobic capacity.'
       : 'Comfortable easy run. Maintain consistency.',
