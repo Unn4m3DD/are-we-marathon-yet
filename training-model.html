@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Marathon Training Model</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface-2: #252525;
+            --text: #e8e8e8;
+            --text-2: #888;
+            --accent: #22c55e;
+            --accent-dim: #166534;
+            --warn: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #fafafa;
+                --surface: #fff;
+                --surface-2: #f3f4f6;
+                --text: #111827;
+                --text-2: #6b7280;
+                --accent: #16a34a;
+                --accent-dim: #dcfce7;
+                --warn: #d97706;
+                --error: #dc2626;
+                --info: #2563eb;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; color: var(--accent); }
+        h3 { font-size: 0.95rem; margin: 1rem 0 0.5rem; color: var(--text-2); }
+        .subtitle { color: var(--text-2); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        
+        .card {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--surface-2);
+        }
+        
+        .compact { padding: 0.75rem; }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .metric-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--surface-2);
+        }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-label { font-size: 0.8rem; color: var(--text-2); width: 100px; }
+        .metric-value { font-weight: 600; }
+        
+        .flow-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .flow-box {
+            background: var(--surface-2);
+            padding: 0.4rem 0.75rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent);
+        }
+        .flow-arrow { color: var(--text-2); }
+        .flow-decision {
+            background: var(--surface-2);
+            padding: 0.4rem 0.75rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--warn);
+        }
+        
+        .micro-bar {
+            height: 4px;
+            background: var(--surface-2);
+            border-radius: 2px;
+            overflow: hidden;
+            width: 60px;
+        }
+        .micro-fill {
+            height: 100%;
+            border-radius: 2px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-green { background: var(--accent); }
+        .dot-yellow { background: var(--warn); }
+        .dot-red { background: var(--error); }
+        .dot-blue { background: var(--info); }
+        
+        .effort-scale {
+            display: flex;
+            gap: 2px;
+            height: 20px;
+        }
+        .effort-block {
+            flex: 1;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        
+        .formula {
+            font-family: 'SF Mono', Monaco, monospace;
+            background: var(--surface-2);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+        }
+        
+        .pill {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .pill-green { background: var(--accent-dim); color: var(--accent); }
+        .pill-blue { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .pill-warn { background: rgba(245, 158, 11, 0.2); color: var(--warn); }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            padding: 0.4rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--surface-2);
+        }
+        th {
+            color: var(--text-2);
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .viz-container {
+            display: flex;
+            align-items: end;
+            gap: 3px;
+            height: 60px;
+            padding: 0.5rem 0;
+        }
+        .viz-bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+            opacity: 0.8;
+            position: relative;
+        }
+        .viz-bar:hover { opacity: 1; }
+        
+        .progress-chain {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+        }
+        .chain-link {
+            padding: 0.2rem 0.4rem;
+            background: var(--surface-2);
+            border-radius: 3px;
+        }
+        .chain-arrow { color: var(--text-2); }
+        
+        .small { font-size: 0.8rem; }
+        .muted { color: var(--text-2); }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 600px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Adaptive Marathon Training Model</h1>
+    <p class="subtitle">On-demand coaching logic with effort feedback integration</p>
+
+    <div class="card compact">
+        <strong>Core Principle:</strong> The model generates one workout at a time, never a future schedule. 
+        Each recommendation is computed fresh from current training state. Post-run effort ratings feed back 
+        into distance, intensity, and recovery calculations.
+    </div>
+
+    <h2>1. Input Signals</h2>
+    <div class="grid-2">
+        <div class="card compact">
+            <h3>Training History (Auto)</h3>
+            <div class="metric-row">
+                <span class="metric-label">28-day distance</span>
+                <span class="metric-value"><span class="micro-bar"><span class="micro-fill" style="width: 65%; background: var(--accent)"></span></span></span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Longest run</span>
+                <span class="metric-value">14.2 km</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Avg weekly</span>
+                <span class="metric-value">18 km</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Week runs</span>
+                <span class="metric-value">2 / 4 <span class="pill pill-green">On track</span></span>
+            </div>
+        </div>
+        
+        <div class="card compact">
+            <h3>User Settings</h3>
+            <div class="metric-row">
+                <span class="metric-label">Min days</span>
+                <span class="metric-value">2</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Max days</span>
+                <span class="metric-value">4</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Last run</span>
+                <span class="metric-value">2 days ago</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Week anchor</span>
+                <span class="metric-value"><span class="status-dot dot-yellow"></span> Long run pending</span>
+            </div>
+        </div>
+    </div>
+
+    <h2>2. Effort Capture Model</h2>
+    <div class="card">
+        <p class="small muted" style="margin-bottom: 0.75rem">Post-run: User selects perceived effort (1-10). This becomes the primary feedback signal.</p>
+        
+        <div class="effort-scale">
+            <div class="effort-block" style="background: #22c55e; color: #000">1-2</div>
+            <div class="effort-block" style="background: #84cc16; color: #000">3-4</div>
+            <div class="effort-block" style="background: #eab308; color: #000">5-6</div>
+            <div class="effort-block" style="background: #f97316; color: #fff">7-8</div>
+            <div class="effort-block" style="background: #ef4444; color: #fff">9-10</div>
+        </div>
+        
+        <table style="margin-top: 0.75rem">
+            <tr>
+                <th>Effort</th>
+                <th>Interpretation</th>
+                <th>Model Response</th>
+            </tr>
+            <tr>
+                <td><span class="pill pill-green">1-4</span></td>
+                <td>Comfortable, conversational</td>
+                <td>Progress distance +5% next similar run</td>
+            </tr>
+            <tr>
+                <td><span class="pill pill-blue">5-6</span></td>
+                <td>Steady, some focus required</td>
+                <td>Maintain current progression</td>
+            </tr>
+            <tr>
+                <td><span class="pill pill-warn">7-8</span></td>
+                <td>Hard, approaching limit</td>
+                <td>Hold distance, add recovery day</td>
+            </tr>
+            <tr>
+                <td><span class="pill" style="background: rgba(239, 68, 68, 0.2); color: var(--error)">9-10</span></td>
+                <td>Maximum effort, struggled</td>
+                <td>Reduce -10%, force rest buffer</td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>3. Recommendation Decision Tree</h2>
+    <div class="card">
+        <div class="flow-container">
+            <div class="flow-decision">Run today?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-decision">Already logged?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Block: done today</div>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 115px"></span>
+            <span class="flow-arrow">↓ No</span>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 115px"></span>
+            <div class="flow-decision">Weekly max reached?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Block: rest week complete</div>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 140px"></span>
+            <span class="flow-arrow">↓ No</span>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 140px"></span>
+            <div class="flow-decision">Weekly anchor missing?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box" style="border-color: var(--info)">Recommend anchor</div>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 165px"></span>
+            <span class="flow-arrow">↓ No</span>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 165px"></span>
+            <div class="flow-decision">Recent hard effort?</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box" style="border-color: var(--warn)">Recovery run</div>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 190px"></span>
+            <span class="flow-arrow">↓ No</span>
+        </div>
+        <div class="flow-container" style="margin-top: 0.5rem">
+            <span style="width: 190px"></span>
+            <div class="flow-box">Progression run</div>
+        </div>
+    </div>
+
+    <h2>4. Adaptive Progression Engine</h2>
+    <div class="card">
+        <h3>Long Run Progression</h3>
+        <div class="formula">
+            next_long = min(current_long + Δ, 34km)<br>
+            Δ = 1.5km × effort_multiplier × consistency_factor
+        </div>
+        
+        <div class="two-col">
+            <div>
+                <p class="small muted">Effort multiplier</p>
+                <table>
+                    <tr><td>Effort 1-4</td><td>1.2</td></tr>
+                    <tr><td>Effort 5-6</td><td>1.0</td></tr>
+                    <tr><td>Effort 7-8</td><td>0.5</td></tr>
+                    <tr><td>Effort 9-10</td><td>0.0 (hold)</td></tr>
+                </table>
+            </div>
+            <div>
+                <p class="small muted">Consistency factor (28-day)</p>
+                <div class="viz-container" style="height: 40px">
+                    <div class="viz-bar" style="height: 20%"></div>
+                    <div class="viz-bar" style="height: 35%"></div>
+                    <div class="viz-bar" style="height: 45%"></div>
+                    <div class="viz-bar" style="height: 60%"></div>
+                    <div class="viz-bar" style="height: 75%"></div>
+                    <div class="viz-bar" style="height: 90%"></div>
+                    <div class="viz-bar" style="height: 100%"></div>
+                </div>
+                <p class="small" style="margin-top: 0.25rem">Runs/wk: 1.5 → 0.8 penalty</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Weekly Volume Adaptation</h3>
+        <div class="formula">
+            target_weekly = max(12km, recent_4wk_avg × (1 + effort_trend/20))<br>
+            effort_trend = Σ(last_4_effort_ratings) / 4
+        </div>
+        
+        <p class="small muted" style="margin-top: 0.5rem">If average effort > 7.5 for 2+ consecutive weeks, volume plateaus regardless of schedule.</p>
+    </div>
+
+    <h2>5. Recovery Intelligence</h2>
+    <div class="grid-2">
+        <div class="card compact">
+            <h3>Auto-Recovery Triggers</h3>
+            <div class="metric-row">
+                <span class="status-dot dot-red"></span>
+                <span>Effort 9-10 yesterday</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-red"></span>
+                <span>Two 8+ efforts in 3 days</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-yellow"></span>
+                <span>Long run +24h, effort 7+</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-blue"></span>
+                <span>3+ consecutive run days</span>
+            </div>
+        </div>
+        
+        <div class="card compact">
+            <h3>Recovery Run Formula</h3>
+            <div class="formula" style="font-size: 0.8rem">
+                distance = max(3km, recent_avg × 0.4)<br>
+                max(20min, comfortable pace)
+            </div>
+            <p class="small muted" style="margin-top: 0.5rem">Recovery never exceeds 40% of recent average run distance. Minimum 3km to maintain rhythm.</p>
+        </div>
+    </div>
+
+    <h2>6. Marathon Readiness Estimation</h2>
+    <div class="card">
+        <p class="small muted" style="margin-bottom: 0.75rem">Comfort (7/10 effort) readiness requires hitting both weekly volume and long run thresholds.</p>
+        
+        <table>
+            <tr>
+                <th>Effort Level</th>
+                <th>Weekly km</th>
+                <th>Long run km</th>
+                <th>Est. Timeline</th>
+            </tr>
+            <tr>
+                <td><span class="pill" style="background: rgba(239, 68, 68, 0.2); color: var(--error)">10/10 Struggle</span></td>
+                <td>42</td>
+                <td>28</td>
+                <td>~8 weeks</td>
+            </tr>
+            <tr>
+                <td><span class="pill pill-warn">9/10 Hard</span></td>
+                <td>48</td>
+                <td>30</td>
+                <td>~10 weeks</td>
+            </tr>
+            <tr>
+                <td><span class="pill pill-blue">8/10 Strong</span></td>
+                <td>54</td>
+                <td>32</td>
+                <td>~12 weeks</td>
+            </tr>
+            <tr>
+                <td><span class="pill pill-green">7/10 Comfort</span></td>
+                <td>60</td>
+                <td>34</td>
+                <td>~14 weeks</td>
+            </tr>
+        </table>
+        
+        <div class="formula" style="margin-top: 0.75rem">
+            weeks_to_ready = max(<br>
+            &nbsp;&nbsp;(target_weekly - current_weekly) / 3,<br>
+            &nbsp;&nbsp;(target_long - current_long) / 1.5<br>
+            )
+        </div>
+    </div>
+
+    <h2>7. Real Adaptation Example</h2>
+    <div class="card">
+        <div class="progress-chain">
+            <span class="chain-link">Week 1: 3km @ effort 3</span>
+            <span class="chain-arrow">→</span>
+            <span class="chain-link">+20% → 4km</span>
+        </div>
+        <div class="progress-chain" style="margin-top: 0.5rem">
+            <span class="chain-link">Week 2: 4km @ effort 4</span>
+            <span class="chain-arrow">→</span>
+            <span class="chain-link">+15% → 5km</span>
+        </div>
+        <div class="progress-chain" style="margin-top: 0.5rem">
+            <span class="chain-link">Week 3: 5km @ effort 7</span>
+            <span class="chain-arrow">→</span>
+            <span class="chain-link">hold → 5km</span>
+        </div>
+        <div class="progress-chain" style="margin-top: 0.5rem">
+            <span class="chain-link">Week 4: 5km @ effort 8</span>
+            <span class="chain-arrow">→</span>
+            <span class="chain-link">-10% → 4.5km + rest</span>
+        </div>
+        <div class="progress-chain" style="margin-top: 0.5rem">
+            <span class="chain-link">Week 5: 4.5km @ effort 5</span>
+            <span class="chain-arrow">→</span>
+            <span class="chain-link">resume → 6km</span>
+        </div>
+        
+        <p class="small muted" style="margin-top: 0.75rem">The model backpedals on volume when effort spikes, preventing overtraining. Progression resumes when sustainable effort returns.</p>
+    </div>
+
+    <h2>8. Implementation Notes</h2>
+    <div class="grid-2">
+        <div class="card compact">
+            <h3>State Store Per User</h3>
+            <div class="metric-row">
+                <span class="metric-label">Base volume</span>
+                <span class="metric-value">12 km</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Long target</span>
+                <span class="metric-value">6 km → 34 km</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Effort buffer</span>
+                <span class="metric-value">Last 4 runs</span>
+            </div>
+        </div>
+        
+        <div class="card compact">
+            <h3>Recalculation Events</h3>
+            <div class="metric-row">
+                <span class="status-dot dot-green"></span>
+                <span>User taps "Tell me what to do"</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-green"></span>
+                <span>Run logged with effort</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-green"></span>
+                <span>Settings changed</span>
+            </div>
+            <div class="metric-row">
+                <span class="status-dot dot-green"></span>
+                <span>Run deleted</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card compact" style="margin-top: 1rem; text-align: center">
+        <p class="small muted">Model v1.0 | Computed on-demand | No future schedules stored</p>
+    </div>
+</body>
+</html>
