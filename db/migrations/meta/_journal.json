@@ -4,17 +4,10 @@
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1779967653981,
-      "tag": "0000_fuzzy_iceman",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1779968618500,
-      "tag": "0001_brown_ezekiel",
-      "breakpoints": true
+      "version": "7",
+      "when": 1700000000000,
+      "tag": "0000_initial",
+      "breakpoints": false
     }
   ]
 }

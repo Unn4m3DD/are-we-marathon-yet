@@ -28,7 +28,7 @@ function formatPace(secondsPerKm: number): string {
 
 export function WorkoutClient({ userId, recommendation }: WorkoutClientProps) {
   const router = useRouter();
-  const [step, setStep] = useState<'confirm' | 'log'>('confirm');
+  const [step, setStep] = useState<'confirm' | 'log' | 'complete'>('confirm');
   const [actualDistance, setActualDistance] = useState(recommendation.distance.toString());
   const [actualDuration, setActualDuration] = useState(
     Math.round(recommendation.targetDurationSeconds / 60).toString()
