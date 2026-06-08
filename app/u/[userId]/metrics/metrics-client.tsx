@@ -128,6 +128,23 @@ export function MetricsClient({ userId }: { userId: string }) {
   }
 
   const { plan, metrics } = metricsQuery.data;
+
+  if (!plan || !metrics) {
+    return (
+      <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="p-3 sm:p-4">
+          <p className="font-medium text-zinc-950 dark:text-zinc-50">Choose a plan to see metrics.</p>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Metrics are calculated from planned workouts and logged runs.
+          </p>
+          <Button asChild className="mt-4">
+            <Link href={`/u/${userId}`}>Choose Plan</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const weeklyData = metrics.weekly.map((week) => ({
     week: `W${week.weekNumber}`,
     plannedRequiredKm: week.plannedRequiredKm,

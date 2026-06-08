@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WelcomeClient } from "@/app/u/[userId]/welcome-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,6 +105,11 @@ export function DashboardClient({ userId }: { userId: string }) {
   }
 
   const { plan, currentWeek, workoutsLeft, nextSession } = dashboard.data;
+
+  if (!plan || !currentWeek) {
+    return <WelcomeClient userId={userId} />;
+  }
+
   const requiredLeft = workoutsLeft.filter((session) => !session.optional).length;
   const optionalLeft = workoutsLeft.filter((session) => session.optional).length;
   const currentWeekEndsOn = weekEndsOn(currentWeek);

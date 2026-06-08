@@ -4,8 +4,9 @@ import { computeMetrics, findCurrentWeek, findNextSession, raceCountdown, weekSe
 import { editWorkoutLogInputSchema, logWorkoutInputSchema, trainingPlanSchema } from "@/lib/training-schema";
 import {
   deleteWorkoutLog,
-  getTrainingPlan,
+  getExistingTrainingPlan,
   listWorkoutLogs,
+  saveDefaultTrainingPlan,
   saveTrainingPlan,
   saveWorkoutLog,
   updateWorkoutLog,
@@ -15,7 +16,10 @@ import { protectedProcedure, router } from "@/server/trpc";
 export const appRouter = router({
   plan: router({
     get: protectedProcedure.query(async ({ ctx }) => {
-      return getTrainingPlan(ctx.userId);
+      return getExistingTrainingPlan(ctx.userId);
+    }),
+    useDefault: protectedProcedure.mutation(async ({ ctx }) => {
+      return saveDefaultTrainingPlan(ctx.userId);
     }),
     save: protectedProcedure
       .input(
@@ -67,8 +71,21 @@ export const appRouter = router({
   }),
   dashboard: router({
     get: protectedProcedure.query(async ({ ctx }) => {
-      const plan = await getTrainingPlan(ctx.userId);
+      const plan = await getExistingTrainingPlan(ctx.userId);
       const logs = await listWorkoutLogs(ctx.userId);
+
+      if (!plan) {
+        return {
+          plan,
+          logs,
+          currentWeek: null,
+          workoutsLeft: [],
+          nextSession: null,
+          countdownDays: null,
+          metrics: null,
+        };
+      }
+
       const currentWeek = findCurrentWeek(plan);
 
       return {
@@ -84,8 +101,16 @@ export const appRouter = router({
   }),
   metrics: router({
     get: protectedProcedure.query(async ({ ctx }) => {
-      const plan = await getTrainingPlan(ctx.userId);
+      const plan = await getExistingTrainingPlan(ctx.userId);
       const logs = await listWorkoutLogs(ctx.userId);
+
+      if (!plan) {
+        return {
+          plan,
+          logs,
+          metrics: null,
+        };
+      }
 
       return {
         plan,

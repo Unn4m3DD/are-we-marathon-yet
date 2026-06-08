@@ -3,6 +3,7 @@
 import { Save } from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { WelcomeClient } from "@/app/u/[userId]/welcome-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,7 +78,7 @@ export function PlanClient({ userId }: { userId: string }) {
     return <div className="h-96 animate-pulse rounded-lg bg-zinc-200" />;
   }
 
-  if (planQuery.error || !planQuery.data) {
+  if (planQuery.error) {
     return (
       <Card>
         <CardContent className="p-5">
@@ -86,6 +87,10 @@ export function PlanClient({ userId }: { userId: string }) {
         </CardContent>
       </Card>
     );
+  }
+
+  if (!planQuery.data) {
+    return <WelcomeClient userId={userId} />;
   }
 
   const plan = planQuery.data;

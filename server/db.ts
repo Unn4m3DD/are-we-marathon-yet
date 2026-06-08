@@ -58,7 +58,7 @@ function parsePlanJson(planJson: unknown): TrainingPlan {
   return trainingPlanSchema.parse(JSON.parse(String(planJson)));
 }
 
-export async function getTrainingPlan(userId: string) {
+export async function getExistingTrainingPlan(userId: string) {
   const db = getDb();
   const existing = await db
     .select({ planJson: trainingPlans.planJson })
@@ -76,9 +76,23 @@ export async function getTrainingPlan(userId: string) {
     }
   }
 
+  return null;
+}
+
+export async function getTrainingPlan(userId: string) {
+  const existingPlan = await getExistingTrainingPlan(userId);
+
+  if (existingPlan) {
+    return existingPlan;
+  }
+
   const plan = getDefaultTrainingPlan();
   await saveTrainingPlan(userId, plan);
   return plan;
+}
+
+export async function saveDefaultTrainingPlan(userId: string) {
+  return saveTrainingPlan(userId, getDefaultTrainingPlan());
 }
 
 export async function saveTrainingPlan(userId: string, plan: TrainingPlan) {

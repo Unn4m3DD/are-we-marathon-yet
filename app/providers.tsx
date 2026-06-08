@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { useState, type ReactNode } from "react";
+import { PwaRegister } from "@/components/pwa-register";
+import { Toaster } from "@/components/ui/sonner";
 import { trpc } from "@/lib/trpc-client";
 
 function userIdFromPath() {
@@ -39,7 +41,11 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <PwaRegister />
+        <Toaster />
+      </QueryClientProvider>
     </trpc.Provider>
   );
 }

@@ -5,11 +5,18 @@
 :root {
   --background: #f9fafb;
   --foreground: #09090b;
+  --border: #e4e4e7;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --radius: 0.375rem;
 }
 
 .dark {
   --background: #09090b;
   --foreground: #fafafa;
+  --border: #27272a;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
   color-scheme: dark;
 }
 
