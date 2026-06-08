@@ -1,92 +1,73 @@
-# Are We Marathon Yet?
+# Are We Marathon Yet
 
-A fitness tracking app that calculates your readiness to run a marathon using a Fitness Level Score (FLS).
+A Next.js marathon training app for a November 8, 2026 race.
 
-## How it works
+## Stack
 
-The FLS (0-100) is calculated from every run you log:
-- **Distance** - how far you ran
-- **Time** - how long it took  
-- **Effort** - how it felt (1-10)
+- Next.js App Router
+- Tailwind CSS with local shadcn-style components
+- tRPC endpoints
+- React Query client state
+- Turso/libSQL storage through Drizzle
+- UUID-only dumb login
 
-This single number drives all recommendations:
-- Base pace: `7:00 - (FLS × 1.8s)` per km
-- Comfortable distance: `3km + (FLS × 0.15)`
-- Long run target: scales with FLS up to 34km
-- Marathon timeline: FLS 80+ = marathon ready
-
-## Local Development
+## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Set up local database
-npm run db:push
-
-# Run dev server
-npm run dev
+pnpm install
+pnpm db:push
+pnpm dev
 ```
 
-## Deployment (Vercel + Turso)
+Open `http://127.0.0.1:3000`.
 
-### 1. Create Turso Database
+## Database
+
+By default, user plans and workout logs use a local libSQL database at `file:local.db`.
+
+For Turso, set:
 
 ```bash
-# Install Turso CLI
-curl -sSfL https://get.tur.so/install.sh | bash
-
-# Login
-turso auth login
-
-# Create database
-turso db create are-we-marathon-yet
-
-# Get connection URL
-turso db show are-we-marathon-yet
+TURSO_DATABASE_URL=libsql://...
+TURSO_AUTH_TOKEN=...
 ```
 
-### 2. Run Migrations on Turso
+Schema is defined in `server/schema.ts` and applied with Drizzle Kit:
 
 ```bash
-# Set environment variable
-export TURSO_DATABASE_URL="libsql://your-db.turso.io"
-export TURSO_AUTH_TOKEN="your-token"
-
-# Push schema
-npm run db:push
+pnpm db:push
 ```
 
-### 3. Configure Vercel
+Use `pnpm db:generate` if you want migration files from the Drizzle schema.
 
-Add environment variables in Vercel dashboard:
-- `TURSO_DATABASE_URL` - Connection URL from Turso
-- `TURSO_AUTH_TOKEN` - Auth token from Turso
+## Training Plan
 
-### 4. Deploy
+The authored starter plan lives at `data/default-training-plan.json` and is validated with Zod before use. New users are seeded from that file, then their plan is stored per user in the database.
+
+Every saved plan is also recorded in `training_plan_versions`, so plan changes over time can be reviewed per user. The ChatGPT update page builds a prompt from the active plan, run history, and manual feedback, then validates pasted replacement JSON before saving it.
+
+The plan intentionally stores only stable authored intent:
+
+- race and baseline
+- simple progression anchors
+- weeks with `startsOn`, `focus`, `targetDistanceKm`, and sessions
+- running sessions with `day`, `type`, `optional`, title, distance, target RPE, and optional notes/structure
+
+The app derives week end dates, session dates, weekly required distance, and metrics. Planned sessions use RPE rather than pace; logged runs can still show pace and speed from actual distance and duration. Strength and mobility are intentionally out of scope for this plan.
+
+## Auth Model
+
+The login page has one UUID input and two actions:
+
+- `Sign In` uses the entered UUIDv4.
+- `Sign Up` generates a new UUIDv4 and signs in with it.
+
+User routes are scoped as `/u/$uuid/...`, and plan/log reads and writes use the active UUID from request context.
+
+## Verification
 
 ```bash
-vercel --prod
+pnpm validate:plan
+pnpm lint
+pnpm build
 ```
-
-## Database Migrations
-
-For local development:
-```bash
-npm run db:push      # Push schema changes to local DB
-```
-
-For production (Turso):
-```bash
-# Set env vars first, then:
-npm run db:push
-```
-
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `TURSO_DATABASE_URL` | Turso database URL | Production |
-| `TURSO_AUTH_TOKEN` | Turso auth token | Production |
-
-Local development uses `file:local.db` automatically.

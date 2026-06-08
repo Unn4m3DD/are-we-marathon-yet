@@ -1,27 +1,15 @@
-import { notFound, redirect } from 'next/navigation';
-import { validate as validateUUID } from 'uuid';
-import { getUserProfile, getRuns } from '@/app/actions/data';
-import { LogRunClient } from './LogRunClient';
+import { LogWorkoutClient } from "@/app/u/[userId]/log/log-workout-client";
+import { uuidV4Schema } from "@/lib/training-schema";
 
-interface PageProps {
+export default async function LogWorkoutPage({
+  params,
+  searchParams,
+}: {
   params: Promise<{ userId: string }>;
-}
-
-export default async function LogRunPage({ params }: PageProps) {
+  searchParams: Promise<{ session?: string }>;
+}) {
   const { userId } = await params;
+  const { session } = await searchParams;
 
-  if (!validateUUID(userId)) {
-    notFound();
-  }
-
-  const [profile, runs] = await Promise.all([
-    getUserProfile(userId),
-    getRuns(userId),
-  ]);
-
-  if (!profile) {
-    notFound();
-  }
-
-  return <LogRunClient userId={userId} currentFLS={profile.currentFLS} previousRuns={runs.slice(0, 5)} />;
+  return <LogWorkoutClient userId={uuidV4Schema.parse(userId)} initialSessionId={session ?? null} />;
 }

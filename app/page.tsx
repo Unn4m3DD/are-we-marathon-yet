@@ -1,117 +1,88 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { validate as validateUUID } from 'uuid';
-import { signIn, signUp } from './actions/auth';
+import { KeyRound, PlusCircle } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { uuidV4Schema } from "@/lib/training-schema";
 
-export default function LoginPage() {
+export default function Home() {
   const router = useRouter();
-  const [uuid, setUuid] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [uuid, setUuid] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const lastUuid = localStorage.getItem('marathon-user-id');
-    if (lastUuid) {
-      setUuid(lastUuid);
-    }
-  }, []);
+  function completeLogin(value: string) {
+    const parsed = uuidV4Schema.safeParse(value.trim());
 
-  const handleSignIn = async () => {
-    setError('');
-    if (!validateUUID(uuid)) {
-      setError('Invalid UUID format');
+    if (!parsed.success) {
+      setError("Enter a valid UUIDv4.");
       return;
     }
-    setLoading(true);
-    try {
-      const result = await signIn(uuid);
-      if (result.success) {
-        localStorage.setItem('marathon-user-id', uuid);
-        router.push(`/u/${uuid}`);
-      } else {
-        setError('User not found');
-      }
-    } catch {
-      setError('Something went wrong');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleSignUp = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      const newId = crypto.randomUUID();
-      const result = await signUp(newId);
-      if (result.success) {
-        localStorage.setItem('marathon-user-id', newId);
-        router.push(`/u/${newId}`);
-      } else {
-        setError('Could not create user');
-      }
-    } catch {
-      setError('Something went wrong');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setError(null);
+    window.localStorage.setItem("awm_user_id", parsed.data);
+    document.cookie = `awm_user_id=${encodeURIComponent(parsed.data)}; path=/; SameSite=Lax; max-age=31536000`;
+    router.push(`/u/${parsed.data}`);
+  }
+
+  function signUp() {
+    const nextUuid = crypto.randomUUID();
+    setUuid(nextUuid);
+    completeLogin(nextUuid);
+  }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-1">Are We Marathon Yet</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-8">
-          On-demand marathon readiness coach
-        </p>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Your ID</label>
-            <input
-              type="text"
-              value={uuid}
-              onChange={(e) => setUuid(e.target.value)}
-              placeholder="Enter UUID to sign in"
-              className="w-full px-3 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <p className="text-xs text-zinc-500 mt-1.5">
-              Anyone with this ID can access your data. Save it somewhere safe.
-            </p>
-          </div>
-
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
-
-          <button
-            onClick={handleSignIn}
-            disabled={loading || !uuid}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-200 dark:border-zinc-800"></div>
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-2 bg-white dark:bg-zinc-950 text-zinc-500">or</span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSignUp}
-            disabled={loading}
-            className="w-full py-2.5 px-4 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
-          >
-            {loading ? 'Creating...' : 'Create New Account'}
-          </button>
-        </div>
+    <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10 dark:bg-zinc-950">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
       </div>
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">Are We Marathon Yet</CardTitle>
+          <CardDescription>
+            Use your UUID as the only sign-in secret for your marathon training plan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="space-y-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              completeLogin(uuid);
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="user-uuid">User UUID</Label>
+              <Input
+                id="user-uuid"
+                name="marathon-user-uuid"
+                type="password"
+                autoComplete="current-password"
+                inputMode="text"
+                spellCheck={false}
+                value={uuid}
+                onChange={(event) => setUuid(event.target.value)}
+                placeholder="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+              />
+              {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button type="submit">
+                <KeyRound className="h-4 w-4" />
+                Sign In
+              </Button>
+              <Button type="button" variant="secondary" onClick={signUp}>
+                <PlusCircle className="h-4 w-4" />
+                Sign Up
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

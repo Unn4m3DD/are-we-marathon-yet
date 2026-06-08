@@ -1,20 +1,9 @@
-import { notFound } from 'next/navigation';
-import { validate as validateUUID } from 'uuid';
-import { getRuns } from '@/app/actions/data';
-import { HistoryClient } from './HistoryClient';
+import { HistoryClient } from "@/app/u/[userId]/history/history-client";
+import { uuidV4Schema } from "@/lib/training-schema";
 
-interface PageProps {
-  params: Promise<{ userId: string }>;
-}
-
-export default async function HistoryPage({ params }: PageProps) {
+export default async function HistoryPage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
+  uuidV4Schema.parse(userId);
 
-  if (!validateUUID(userId)) {
-    notFound();
-  }
-
-  const runs = await getRuns(userId);
-
-  return <HistoryClient userId={userId} runs={runs} />;
+  return <HistoryClient />;
 }
