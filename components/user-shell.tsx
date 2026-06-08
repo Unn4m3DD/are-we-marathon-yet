@@ -32,19 +32,18 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50">
-      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <div className="flex h-screen flex-col bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50">
+      <header className="shrink-0 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+        <div className="mx-auto grid max-w-7xl grid-cols-3 items-center gap-3 px-4 py-2 sm:px-6">
           <Link href={`/u/${userId}`} className="flex min-w-0 items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
-              <Activity className="h-5 w-5" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
+              <Activity className="h-4 w-4" />
             </span>
             <span className="min-w-0">
               <span className="block text-sm font-semibold">Are We Marathon Yet</span>
-              <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">{userId}</span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center justify-center gap-1 md:flex">
             {navItems.map((item) => {
               const href = `/u/${userId}${item.href}`;
               const active = item.href === "" ? pathname === href : pathname.startsWith(href);
@@ -65,19 +64,20 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
               );
             })}
           </nav>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1">
             <ThemeToggle />
-            <Button variant="ghost" size="sm" onClick={signOut}>
+            <Button variant="ghost" size="sm" onClick={signOut} aria-label="Sign out">
               <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign out</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">{children}</main>
+      <main className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:py-6">{children}</div>
+      </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:hidden">
+      <nav className="shrink-0 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:hidden">
         <div className="grid grid-cols-5">
           {navItems.map((item) => {
             const href = `/u/${userId}${item.href}`;

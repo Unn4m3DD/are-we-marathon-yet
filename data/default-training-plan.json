@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 2,
-  "planId": "marathon-2026-11-08-rpe",
-  "name": "RPE-Based Marathon Plan",
+  "schemaVersion": 3,
+  "planId": "marathon-2026-11-08-daniels-rpe-v3",
+  "name": "Beginner Daniels-Style RPE Marathon Plan",
   "race": {
     "date": "2026-11-08",
     "distanceKm": 42.2
   },
   "athleteBaseline": {
-    "date": "2026-06-06",
+    "date": "2026-06-07",
     "distanceKm": 10.5,
     "durationMin": 90
   },
@@ -18,1527 +18,1263 @@
   },
   "progression": {
     "basis": "baseline",
-    "longRunStartKm": 12,
+    "longRunStartKm": 11,
     "longRunPeakKm": 32,
-    "weeklyDistanceStartKm": 36,
-    "weeklyDistancePeakKm": 76
+    "weeklyDistanceStartKm": 29,
+    "weeklyDistancePeakKm": 64
   },
   "weeks": [
     {
       "weekNumber": 1,
       "startsOn": "2026-06-08",
-      "focus": "base",
-      "targetDistanceKm": 36,
-      "notes": "Set the routine and keep effort easy enough that recovery is predictable.",
+      "targetDistanceKm": 34,
+      "notes": "Settle into six planned slots with only four required runs. Keep all optional work easy to skip.",
       "sessions": [
         {
           "id": "w1-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w1-tue-optional",
+          "id": "w1-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 4,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w1-wed-hills",
+          "id": "w1-wed-repetition",
           "day": "Wed",
-          "type": "hills",
+          "type": "repetition",
           "optional": false,
-          "title": "Hill Strides",
-          "distanceKm": 6,
-          "targetRpe": 6,
-          "structure": "Run easy, then add short uphill strides with full easy recoveries. Stop before form gets sloppy."
+          "distanceKm": 5,
+          "targetRpe": 7,
+          "description": "Warm up easy. 8 x 20 sec @ RPE 7, 60-90 sec walk/jog recoveries. Cool down easy."
         },
         {
-          "id": "w1-thu-optional",
+          "id": "w1-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
         },
         {
           "id": "w1-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "targetRpe": 3
         },
         {
-          "id": "w1-sun-long",
+          "id": "w1-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 12 km",
-          "distanceKm": 12,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 11,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 2,
       "startsOn": "2026-06-15",
-      "focus": "base",
-      "targetDistanceKm": 40,
-      "notes": "Add a small amount of volume while keeping every easy run truly easy.",
+      "targetDistanceKm": 37,
+      "notes": "Build gently from the 10.5 km baseline and keep the first interval session controlled.",
       "sessions": [
         {
           "id": "w2-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w2-tue-optional",
+          "id": "w2-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 4,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
           "id": "w2-wed-interval",
           "day": "Wed",
           "type": "interval",
           "optional": false,
-          "title": "Fartlek",
-          "distanceKm": 6.4,
+          "distanceKm": 6,
           "targetRpe": 7,
-          "structure": "Alternate controlled harder running with easy jogging. Keep the hard parts strong but never desperate."
+          "description": "Warm up 2 km. 5 x 2 min @ RPE 7, 2 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w2-thu-optional",
+          "id": "w2-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
         },
         {
           "id": "w2-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 6.6,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 5,
+          "targetRpe": 3
         },
         {
-          "id": "w2-sun-long",
+          "id": "w2-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 14 km",
-          "distanceKm": 14,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 13,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 3,
       "startsOn": "2026-06-22",
-      "focus": "base",
-      "targetDistanceKm": 44,
-      "notes": "Introduce controlled steady work without chasing pace.",
+      "targetDistanceKm": 39,
+      "notes": "Introduce threshold work as controlled blocks, not a race effort.",
       "sessions": [
         {
           "id": "w3-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w3-tue-optional",
+          "id": "w3-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 4,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w3-wed-tempo",
+          "id": "w3-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Tempo Blocks",
-          "distanceKm": 7,
+          "distanceKm": 6,
           "targetRpe": 6,
-          "structure": "Run steady blocks at comfortably hard effort with easy jogging between. Breathing should be controlled."
+          "description": "Warm up 2 km. 3 x 5 min @ RPE 6, 2 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w3-thu-optional",
+          "id": "w3-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w3-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 5,
+          "targetRpe": 3
         },
         {
-          "id": "w3-sun-long",
+          "id": "w3-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 16 km",
-          "distanceKm": 16,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 15,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 4,
       "startsOn": "2026-06-29",
-      "focus": "cutback",
-      "targetDistanceKm": 36,
-      "notes": "Cut back volume and absorb the first three weeks.",
+      "targetDistanceKm": 33,
+      "notes": "Reduce distance to absorb the first three weeks and keep the repetition work relaxed.",
       "sessions": [
         {
           "id": "w4-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w4-tue-optional",
+          "id": "w4-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 4,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 3,
+          "targetRpe": 2
         },
         {
-          "id": "w4-wed-hills",
+          "id": "w4-wed-repetition",
           "day": "Wed",
-          "type": "hills",
+          "type": "repetition",
           "optional": false,
-          "title": "Hill Strides",
-          "distanceKm": 6.1,
-          "targetRpe": 6,
-          "structure": "Run easy, then add short uphill strides with full easy recoveries. Stop before form gets sloppy."
+          "distanceKm": 5,
+          "targetRpe": 7,
+          "description": "Warm up easy. 10 x 20 sec @ RPE 7, 60-90 sec walk/jog recoveries. Cool down easy."
         },
         {
-          "id": "w4-thu-optional",
+          "id": "w4-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 3,
+          "targetRpe": 2
         },
         {
           "id": "w4-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Reset Run",
-          "distanceKm": 3.9,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 5,
+          "targetRpe": 3
         },
         {
-          "id": "w4-sun-long",
+          "id": "w4-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Cutback Long Run",
           "distanceKm": 12,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 5,
       "startsOn": "2026-07-06",
-      "focus": "build",
-      "targetDistanceKm": 49,
-      "notes": "Resume building with simple aerobic volume and relaxed strides.",
+      "targetDistanceKm": 44,
+      "notes": "Resume building endurance while keeping the faster work short and technically clean.",
       "sessions": [
         {
           "id": "w5-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w5-tue-optional",
+          "id": "w5-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w5-wed-interval",
           "day": "Wed",
           "type": "interval",
           "optional": false,
-          "title": "Fartlek",
-          "distanceKm": 7.8,
+          "distanceKm": 7,
           "targetRpe": 7,
-          "structure": "Alternate controlled harder running with easy jogging. Keep the hard parts strong but never desperate."
+          "description": "Warm up 2 km. 5 x 3 min @ RPE 7, 3 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w5-thu-optional",
+          "id": "w5-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w5-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 7.2,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 6,
+          "targetRpe": 3
         },
         {
-          "id": "w5-sun-long",
+          "id": "w5-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 18 km",
-          "distanceKm": 18,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 17,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 6,
       "startsOn": "2026-07-13",
-      "focus": "build",
-      "targetDistanceKm": 51,
-      "notes": "Reach 20 km and practice fueling without intensity pressure.",
+      "targetDistanceKm": 47,
+      "notes": "Extend the long run and use threshold as steady, controlled aerobic pressure.",
       "sessions": [
         {
           "id": "w6-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w6-tue-optional",
+          "id": "w6-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w6-wed-tempo",
+          "id": "w6-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 8.2,
+          "distanceKm": 7,
           "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "description": "Warm up 2 km. 2 x 10 min @ RPE 6, 3 min easy jog recovery. Cool down easy."
         },
         {
-          "id": "w6-thu-optional",
+          "id": "w6-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w6-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 6.8,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 6,
+          "targetRpe": 3
         },
         {
-          "id": "w6-sun-long",
+          "id": "w6-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 20 km",
-          "distanceKm": 20,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 19,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 7,
       "startsOn": "2026-07-20",
-      "focus": "cutback",
       "targetDistanceKm": 41,
-      "notes": "Reduce load and keep the week smooth.",
+      "notes": "Cut back again before the larger endurance block.",
       "sessions": [
         {
           "id": "w7-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w7-tue-optional",
+          "id": "w7-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
-          "id": "w7-wed-hills",
+          "id": "w7-wed-repetition",
           "day": "Wed",
-          "type": "hills",
+          "type": "repetition",
           "optional": false,
-          "title": "Hill Strides",
-          "distanceKm": 7,
-          "targetRpe": 6,
-          "structure": "Run easy, then add short uphill strides with full easy recoveries. Stop before form gets sloppy."
+          "distanceKm": 6,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 8 x 30 sec @ RPE 7-8, 90 sec easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w7-thu-optional",
+          "id": "w7-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w7-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 4,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 6,
+          "targetRpe": 3
         },
         {
-          "id": "w7-sun-long",
+          "id": "w7-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Cutback Long Run",
-          "distanceKm": 14,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 15,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 8,
       "startsOn": "2026-07-27",
-      "focus": "build",
-      "targetDistanceKm": 55,
-      "notes": "Build again with a longer long run and controlled tempo by feel.",
+      "targetDistanceKm": 53,
+      "notes": "Move past half-marathon distance on the long run and keep the quality session precise.",
       "sessions": [
         {
           "id": "w8-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w8-tue-optional",
+          "id": "w8-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
           "id": "w8-wed-interval",
           "day": "Wed",
           "type": "interval",
           "optional": false,
-          "title": "Fartlek",
-          "distanceKm": 8.8,
+          "distanceKm": 8,
           "targetRpe": 7,
-          "structure": "Alternate controlled harder running with easy jogging. Keep the hard parts strong but never desperate."
+          "description": "Warm up 2 km. 6 x 3 min @ RPE 7, 3 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w8-thu-optional",
+          "id": "w8-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
         },
         {
           "id": "w8-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Reset Run",
-          "distanceKm": 8.2,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w8-sun-long",
+          "id": "w8-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 22 km",
-          "distanceKm": 22,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 21,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 9,
       "startsOn": "2026-08-03",
-      "focus": "build",
-      "targetDistanceKm": 59,
-      "notes": "Add marathon-specific endurance using steady RPE, not pace targets.",
+      "targetDistanceKm": 55,
+      "notes": "Practice fueling on the long run and stay honest about threshold effort.",
       "sessions": [
         {
           "id": "w9-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w9-tue-optional",
+          "id": "w9-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w9-wed-tempo",
+          "id": "w9-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 9.4,
+          "distanceKm": 8,
           "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "description": "Warm up 2 km. 3 x 8 min @ RPE 6, 3 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w9-thu-optional",
+          "id": "w9-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w9-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 8.6,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w9-sun-long",
+          "id": "w9-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 24 km",
-          "distanceKm": 24,
-          "targetRpe": 4,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "distanceKm": 23,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 10,
       "startsOn": "2026-08-10",
-      "focus": "cutback",
-      "targetDistanceKm": 45,
-      "notes": "Cut back volume and review recovery signals.",
+      "targetDistanceKm": 44,
+      "notes": "Reduce the long run while keeping a short neuromuscular stimulus.",
       "sessions": [
         {
           "id": "w10-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w10-tue-optional",
+          "id": "w10-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
-          "id": "w10-wed-hills",
+          "id": "w10-wed-repetition",
           "day": "Wed",
-          "type": "hills",
+          "type": "repetition",
           "optional": false,
-          "title": "Hill Strides",
-          "distanceKm": 7.7,
-          "targetRpe": 6,
-          "structure": "Run easy, then add short uphill strides with full easy recoveries. Stop before form gets sloppy."
+          "distanceKm": 6,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 10 x 30 sec @ RPE 7-8, 90 sec easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w10-thu-optional",
+          "id": "w10-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w10-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 4.3,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 6,
+          "targetRpe": 3
         },
         {
-          "id": "w10-sun-long",
+          "id": "w10-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Cutback Long Run",
-          "distanceKm": 16,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 18,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 11,
       "startsOn": "2026-08-17",
-      "focus": "build",
-      "targetDistanceKm": 63,
-      "notes": "Begin the bigger endurance block with a 26 km long run.",
+      "targetDistanceKm": 57,
+      "notes": "Start the higher-volume block with a 25 km long run and controlled interval work.",
       "sessions": [
         {
           "id": "w11-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w11-tue-optional",
+          "id": "w11-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
-          "id": "w11-wed-tempo",
+          "id": "w11-wed-interval",
           "day": "Wed",
-          "type": "tempo",
+          "type": "interval",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 10.1,
-          "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "distanceKm": 8,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 5 x 4 min @ RPE 7-8, 3 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w11-thu-optional",
+          "id": "w11-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w11-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 7.9,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w11-sun-long",
+          "id": "w11-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 26 km",
-          "distanceKm": 26,
-          "targetRpe": 4,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "distanceKm": 25,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 12,
       "startsOn": "2026-08-24",
-      "focus": "build",
-      "targetDistanceKm": 67,
-      "notes": "Reach 28 km and rehearse shoes, fueling, and fluids.",
+      "targetDistanceKm": 60,
+      "notes": "Keep building long-run durability and test fueling consistency.",
       "sessions": [
         {
           "id": "w12-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w12-tue-optional",
+          "id": "w12-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
-          "id": "w12-wed-tempo",
+          "id": "w12-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 10.7,
+          "distanceKm": 8,
           "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "description": "Warm up 2 km. 20 min continuous @ RPE 6. Cool down easy."
         },
         {
-          "id": "w12-thu-optional",
+          "id": "w12-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w12-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Reset Run",
-          "distanceKm": 9.3,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w12-sun-long",
+          "id": "w12-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 28 km",
-          "distanceKm": 28,
-          "targetRpe": 4,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "distanceKm": 27,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 13,
       "startsOn": "2026-08-31",
-      "focus": "cutback",
       "targetDistanceKm": 52,
-      "notes": "Absorb the previous build and keep everything comfortable.",
+      "notes": "Step down the long run to protect recovery before the peak block.",
       "sessions": [
         {
           "id": "w13-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w13-tue-optional",
+          "id": "w13-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
-          "id": "w13-wed-hills",
+          "id": "w13-wed-repetition",
           "day": "Wed",
-          "type": "hills",
+          "type": "repetition",
           "optional": false,
-          "title": "Hill Strides",
-          "distanceKm": 8.8,
-          "targetRpe": 6,
-          "structure": "Run easy, then add short uphill strides with full easy recoveries. Stop before form gets sloppy."
+          "distanceKm": 7,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 6 x 45 sec @ RPE 8, 2 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w13-thu-optional",
+          "id": "w13-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w13-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 4.2,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w13-sun-long",
+          "id": "w13-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Cutback Long Run",
-          "distanceKm": 20,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 21,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 14,
       "startsOn": "2026-09-07",
-      "focus": "build",
-      "targetDistanceKm": 70,
-      "notes": "Hit 30 km with conservative effort and strong fueling habits.",
+      "targetDistanceKm": 66,
+      "notes": "Enter peak work with a 29 km long run and no forced pace goals.",
       "sessions": [
         {
           "id": "w14-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w14-tue-optional",
+          "id": "w14-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w14-wed-tempo",
+          "id": "w14-wed-interval",
           "day": "Wed",
-          "type": "tempo",
+          "type": "interval",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 11.2,
-          "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "distanceKm": 9,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 6 x 4 min @ RPE 7-8, 3 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w14-thu-optional",
+          "id": "w14-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
         },
         {
           "id": "w14-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 9.8,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w14-sun-long",
+          "id": "w14-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 30 km",
-          "distanceKm": 30,
-          "targetRpe": 5,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "distanceKm": 29,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 15,
       "startsOn": "2026-09-14",
-      "focus": "build",
-      "targetDistanceKm": 61,
-      "notes": "Back off the long run while keeping a controlled quality touch.",
+      "targetDistanceKm": 55,
+      "notes": "Back off distance while preserving a controlled threshold touch.",
       "sessions": [
         {
           "id": "w15-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w15-tue-optional",
+          "id": "w15-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
-          "id": "w15-wed-tempo",
+          "id": "w15-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 9.8,
+          "distanceKm": 8,
           "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "description": "Warm up 2 km. 4 x 6 min @ RPE 6, 2 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w15-thu-optional",
+          "id": "w15-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w15-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 8.2,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w15-sun-long",
+          "id": "w15-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 24 km",
-          "distanceKm": 24,
-          "targetRpe": 4,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "distanceKm": 23,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 16,
       "startsOn": "2026-09-21",
-      "focus": "peak",
-      "targetDistanceKm": 74,
-      "notes": "Peak endurance with the first 32 km run.",
+      "targetDistanceKm": 69,
+      "notes": "First 32 km long run. Make it a full fueling, shoes, socks, and route rehearsal.",
       "sessions": [
         {
           "id": "w16-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w16-tue-optional",
+          "id": "w16-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w16-wed-hills",
+          "id": "w16-wed-interval",
           "day": "Wed",
-          "type": "hills",
+          "type": "interval",
           "optional": false,
-          "title": "Hill Strides",
-          "distanceKm": 11.8,
-          "targetRpe": 6,
-          "structure": "Run easy, then add short uphill strides with full easy recoveries. Stop before form gets sloppy."
+          "distanceKm": 9,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 5 x 5 min @ RPE 7-8, 4 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w16-thu-optional",
+          "id": "w16-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
         },
         {
           "id": "w16-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Reset Run",
-          "distanceKm": 11.2,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w16-sun-long",
+          "id": "w16-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 32 km",
           "distanceKm": 32,
-          "targetRpe": 5,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 17,
       "startsOn": "2026-09-28",
-      "focus": "peak",
-      "targetDistanceKm": 62,
-      "notes": "Drop from the first peak and protect recovery.",
+      "targetDistanceKm": 55,
+      "notes": "Drop from the first peak and let the body consolidate the work.",
       "sessions": [
         {
           "id": "w17-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w17-tue-optional",
+          "id": "w17-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
-          "id": "w17-wed-interval",
+          "id": "w17-wed-repetition",
           "day": "Wed",
-          "type": "interval",
+          "type": "repetition",
           "optional": false,
-          "title": "Fartlek",
-          "distanceKm": 9.9,
+          "distanceKm": 7,
           "targetRpe": 7,
-          "structure": "Alternate controlled harder running with easy jogging. Keep the hard parts strong but never desperate."
+          "description": "Warm up 2 km. 8 x 20 sec @ RPE 7, 90 sec easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w17-thu-optional",
+          "id": "w17-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w17-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 7.1,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w17-sun-long",
+          "id": "w17-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 26 km",
-          "distanceKm": 26,
-          "targetRpe": 4,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "distanceKm": 24,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 18,
       "startsOn": "2026-10-05",
-      "focus": "peak",
-      "targetDistanceKm": 74,
-      "notes": "Final peak week and full race rehearsal.",
+      "targetDistanceKm": 69,
+      "notes": "Final 32 km long run and last full race rehearsal. Keep the week disciplined.",
       "sessions": [
         {
           "id": "w18-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w18-tue-optional",
+          "id": "w18-tue-easy-optional",
           "day": "Tue",
           "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w18-wed-tempo",
+          "id": "w18-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 12,
+          "distanceKm": 9,
           "targetRpe": 6,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "description": "Warm up 2 km. 2 x 15 min @ RPE 6, 4 min easy jog recovery. Cool down easy."
         },
         {
-          "id": "w18-thu-optional",
+          "id": "w18-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 6,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
         },
         {
           "id": "w18-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 11,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 8,
+          "targetRpe": 3
         },
         {
-          "id": "w18-sun-long",
+          "id": "w18-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Peak Long Run: 32 km",
           "distanceKm": 32,
-          "targetRpe": 5,
-          "notes": "Peak long run and full race rehearsal. Use race-day fueling, shoes, socks, and hydration, but keep effort controlled."
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 19,
       "startsOn": "2026-10-12",
-      "focus": "taper",
-      "targetDistanceKm": 57,
-      "notes": "Start tapering while keeping rhythm familiar.",
+      "targetDistanceKm": 54,
+      "notes": "Begin taper. Reduce volume, keep one small interval stimulus, and prioritize sleep.",
       "sessions": [
         {
           "id": "w19-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
-          "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "distanceKm": 7,
+          "targetRpe": 3
         },
         {
-          "id": "w19-tue-optional",
+          "id": "w19-tue-easy-optional",
           "day": "Tue",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
-          "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
-        },
-        {
-          "id": "w19-wed-tempo",
-          "day": "Wed",
-          "type": "tempo",
-          "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 9.1,
-          "targetRpe": 5,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
-        },
-        {
-          "id": "w19-thu-optional",
-          "day": "Thu",
-          "type": "recovery",
-          "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "targetRpe": 2
+        },
+        {
+          "id": "w19-wed-interval",
+          "day": "Wed",
+          "type": "interval",
+          "optional": false,
+          "distanceKm": 7,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 4 x 4 min @ RPE 7, 3 min easy jog recoveries. Cool down easy."
+        },
+        {
+          "id": "w19-thu-easy-optional",
+          "day": "Thu",
+          "type": "easy",
+          "optional": true,
+          "distanceKm": 5,
+          "targetRpe": 2
         },
         {
           "id": "w19-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 8.9,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 6,
+          "targetRpe": 3
         },
         {
-          "id": "w19-sun-long",
+          "id": "w19-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 24 km",
           "distanceKm": 24,
-          "targetRpe": 4,
-          "notes": "Practice race breakfast, shoes, fluids, and fuel every 30-40 minutes. Effort should stay controlled."
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 20,
       "startsOn": "2026-10-19",
-      "focus": "taper",
-      "targetDistanceKm": 50,
-      "notes": "Reduce volume again and prioritize freshness.",
+      "targetDistanceKm": 43,
+      "notes": "Continue taper with a shorter long run and controlled threshold rhythm.",
       "sessions": [
         {
           "id": "w20-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 6,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w20-tue-optional",
+          "id": "w20-tue-easy-optional",
           "day": "Tue",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w20-wed-tempo",
+          "id": "w20-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Marathon-Effort Work",
-          "distanceKm": 8,
-          "targetRpe": 5,
-          "structure": "Include controlled marathon-effort segments by feel. Do not use pace to force the effort."
+          "distanceKm": 6,
+          "targetRpe": 6,
+          "description": "Warm up 2 km. 3 x 10 min @ RPE 6, 3 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w20-thu-optional",
+          "id": "w20-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 5,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 4,
+          "targetRpe": 2
         },
         {
           "id": "w20-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Reset Run",
-          "distanceKm": 7,
-          "targetRpe": 3,
-          "notes": "Keep it easy and avoid turning this into a workout."
+          "distanceKm": 5,
+          "targetRpe": 3
         },
         {
-          "id": "w20-sun-long",
+          "id": "w20-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 20 km",
-          "distanceKm": 20,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 18,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 21,
       "startsOn": "2026-10-26",
-      "focus": "taper",
-      "targetDistanceKm": 38,
-      "notes": "Sharpen lightly and finalize race logistics.",
+      "targetDistanceKm": 33,
+      "notes": "Sharpen lightly, finalize race logistics, and avoid creating fatigue.",
       "sessions": [
         {
           "id": "w21-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Aerobic Run",
           "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Keep this conversational. If the prior long run left soreness, reduce effort before reducing distance."
+          "targetRpe": 3
         },
         {
-          "id": "w21-tue-optional",
+          "id": "w21-tue-easy-optional",
           "day": "Tue",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Easy Run",
           "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Skip if recovery, sleep, soreness, schedule, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w21-wed-interval",
+          "id": "w21-wed-repetition",
           "day": "Wed",
-          "type": "interval",
+          "type": "repetition",
           "optional": false,
-          "title": "Relaxed Strides",
-          "distanceKm": 6.1,
-          "targetRpe": 6,
-          "structure": "Easy running with relaxed short strides. Full easy recoveries and no hard closing sprint."
+          "distanceKm": 5,
+          "targetRpe": 7,
+          "description": "Warm up 2 km. 8 x 20 sec @ RPE 7, 90 sec easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w21-thu-optional",
+          "id": "w21-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
-          "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Run softer than easy. This is the first run to skip if fatigue is high."
+          "distanceKm": 3,
+          "targetRpe": 2
         },
         {
           "id": "w21-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Easy Run",
-          "distanceKm": 4.9,
-          "targetRpe": 3,
-          "notes": "Keep form relaxed and finish with energy in reserve."
+          "distanceKm": 4,
+          "targetRpe": 3
         },
         {
-          "id": "w21-sun-long",
+          "id": "w21-sun-long-easy",
           "day": "Sun",
-          "type": "long",
+          "type": "easy",
           "optional": false,
-          "title": "Long Run: 14 km",
-          "distanceKm": 14,
-          "targetRpe": 4,
-          "notes": "Keep effort comfortable and practice simple fueling if the run lasts over 75 minutes."
+          "distanceKm": 12,
+          "targetRpe": 4
         }
       ]
     },
     {
       "weekNumber": 22,
       "startsOn": "2026-11-02",
-      "focus": "race",
-      "targetDistanceKm": 62.2,
-      "notes": "Arrive rested and run the marathon by effort.",
+      "targetDistanceKm": 60.2,
+      "notes": "Arrive rested. The race is stored as Easy because the schema only has Daniels workout categories.",
       "sessions": [
         {
           "id": "w22-mon-easy",
           "day": "Mon",
           "type": "easy",
           "optional": false,
-          "title": "Easy Race-Week Run",
-          "distanceKm": 5,
-          "targetRpe": 3,
-          "notes": "Short and relaxed. Finish fresher than you started."
+          "distanceKm": 4,
+          "targetRpe": 3
         },
         {
-          "id": "w22-tue-optional",
+          "id": "w22-tue-easy-optional",
           "day": "Tue",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Jog",
           "distanceKm": 3,
-          "targetRpe": 2,
-          "notes": "Skip this if it adds any fatigue."
+          "targetRpe": 2
         },
         {
-          "id": "w22-wed-rhythm",
+          "id": "w22-wed-threshold",
           "day": "Wed",
-          "type": "tempo",
+          "type": "threshold",
           "optional": false,
-          "title": "Race-Week Rhythm",
           "distanceKm": 5,
-          "targetRpe": 5,
-          "structure": "Easy run with 3 x 3 min at marathon effort by feel. Full easy jogging between each block."
+          "targetRpe": 6,
+          "description": "Warm up 2 km. 4 x 5 min @ RPE 6, 2 min easy jog recoveries. Cool down easy."
         },
         {
-          "id": "w22-thu-optional",
+          "id": "w22-thu-easy-optional",
           "day": "Thu",
-          "type": "recovery",
+          "type": "easy",
           "optional": true,
-          "title": "Optional Recovery Run",
           "distanceKm": 3,
-          "targetRpe": 2,
-          "notes": "Very easy only. Skip if sleep, soreness, or stress is poor."
+          "targetRpe": 2
         },
         {
-          "id": "w22-fri-shakeout",
+          "id": "w22-fri-easy",
           "day": "Fri",
           "type": "easy",
           "optional": false,
-          "title": "Shakeout Run",
-          "distanceKm": 4,
-          "targetRpe": 2,
-          "notes": "Very easy. Add 4 x 10 sec relaxed strides only if they feel natural."
+          "distanceKm": 3,
+          "targetRpe": 3
         },
         {
-          "id": "w22-sun-race",
+          "id": "w22-sun-marathon",
           "day": "Sun",
-          "type": "race",
+          "type": "easy",
           "optional": false,
-          "title": "Marathon Race",
           "distanceKm": 42.2,
-          "targetRpe": 7,
-          "notes": "Start at RPE 5-6, hold back through halfway, then let effort rise gradually. Fuel in the first 30 minutes and repeat every 30 minutes."
+          "targetRpe": 6
         }
       ]
     }

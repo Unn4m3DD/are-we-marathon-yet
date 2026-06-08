@@ -126,17 +126,22 @@ export function computeMetrics(plan: TrainingPlan, logs: WorkoutLog[], date = to
   const plannedToDate = plannedSessionsThrough(plan, date);
   const requiredToDate = plannedToDate.filter((session) => !session.optional);
   const completedRequiredToDate = requiredToDate.filter((session) => done.has(session.id));
-  const runLogs = logs.filter((log) => log.distanceKm && log.durationMin);
-  const totalDistanceKm = runLogs.reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
-  const totalDurationMin = runLogs.reduce((sum, log) => sum + (log.durationMin ?? 0), 0);
-  const longestRunKm = Math.max(0, ...runLogs.map((log) => log.distanceKm ?? 0));
-  const averagePaceSecPerKm = secondsPerKmFromWorkout(totalDistanceKm, totalDurationMin);
+  const distanceLogs = logs.filter((log) => log.distanceKm != null && log.distanceKm > 0);
+  const timedRunLogs = distanceLogs.filter((log) => log.durationMin != null && log.durationMin > 0);
+  const totalDistanceKm = distanceLogs.reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
+  const totalTimedDistanceKm = timedRunLogs.reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
+  const totalDurationMin = timedRunLogs.reduce((sum, log) => sum + (log.durationMin ?? 0), 0);
+  const longestRunKm = Math.max(0, ...distanceLogs.map((log) => log.distanceKm ?? 0));
+  const averagePaceSecPerKm = secondsPerKmFromWorkout(totalTimedDistanceKm, totalDurationMin);
 
   const weekly = plan.weeks.map((week) => {
     const endsOn = weekEndsOn(week);
-    const weekLogs = runLogs.filter((log) => isWithin(log.date, week.startsOn, endsOn));
+    const weekLogs = distanceLogs.filter((log) => isWithin(log.date, week.startsOn, endsOn));
+    const weekTimedLogs = timedRunLogs.filter((log) => isWithin(log.date, week.startsOn, endsOn));
     const actualKm = weekLogs.reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
-    const actualDurationMin = weekLogs.reduce((sum, log) => sum + (log.durationMin ?? 0), 0);
+    const longestRunKm = Math.max(0, ...weekLogs.map((log) => log.distanceKm ?? 0));
+    const actualTimedKm = weekTimedLogs.reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
+    const actualDurationMin = weekTimedLogs.reduce((sum, log) => sum + (log.durationMin ?? 0), 0);
     const completedRequired = week.sessions.filter(
       (session) => !session.optional && done.has(session.id),
     ).length;
@@ -146,17 +151,17 @@ export function computeMetrics(plan: TrainingPlan, logs: WorkoutLog[], date = to
       weekNumber: week.weekNumber,
       startsOn: week.startsOn,
       endsOn,
-      phase: week.focus,
       plannedRequiredKm: weekRequiredDistanceKm(week),
       plannedTotalKm: week.targetDistanceKm,
       actualKm: Number(actualKm.toFixed(1)),
-      averagePaceSecPerKm: secondsPerKmFromWorkout(actualKm, actualDurationMin),
+      longestRunKm: Number(longestRunKm.toFixed(1)),
+      averagePaceSecPerKm: secondsPerKmFromWorkout(actualTimedKm, actualDurationMin),
       completionPercent:
         requiredCount === 0 ? 0 : Math.round((completedRequired / requiredCount) * 100),
     };
   });
 
-  const paceTrend = runLogs
+  const paceTrend = timedRunLogs
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((log) => ({

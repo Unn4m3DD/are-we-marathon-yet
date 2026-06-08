@@ -11,7 +11,7 @@ import {
   trainingPlanSchema,
   workoutLogSchema,
 } from "@/lib/training-schema";
-import { trainingPlanVersions, trainingPlans, workoutLogs } from "@/server/schema";
+import { trainingPlans, workoutLogs } from "@/server/schema";
 
 type DbGlobal = typeof globalThis & {
   marathonDbClient?: Client;
@@ -58,30 +58,6 @@ function parsePlanJson(planJson: unknown): TrainingPlan {
   return trainingPlanSchema.parse(JSON.parse(String(planJson)));
 }
 
-type SaveTrainingPlanOptions = {
-  source?: "manual" | "chatgpt" | "seed" | "repair";
-  feedback?: string | null;
-};
-
-async function insertPlanVersion(
-  userId: string,
-  plan: TrainingPlan,
-  timestamp: string,
-  options: SaveTrainingPlanOptions = {},
-) {
-  const source = options.source ?? "manual";
-
-  await getDb().insert(trainingPlanVersions).values({
-    id: randomUUID(),
-    userId,
-    planJson: JSON.stringify(plan),
-    raceDate: plan.race.date,
-    source,
-    feedback: options.feedback ?? null,
-    createdAt: timestamp,
-  });
-}
-
 export async function getTrainingPlan(userId: string) {
   const db = getDb();
   const existing = await db
@@ -95,21 +71,17 @@ export async function getTrainingPlan(userId: string) {
       return parsePlanJson(existing[0].planJson);
     } catch {
       const replacementPlan = getDefaultTrainingPlan();
-      await saveTrainingPlan(userId, replacementPlan, { source: "repair" });
+      await saveTrainingPlan(userId, replacementPlan);
       return replacementPlan;
     }
   }
 
   const plan = getDefaultTrainingPlan();
-  await saveTrainingPlan(userId, plan, { source: "seed" });
+  await saveTrainingPlan(userId, plan);
   return plan;
 }
 
-export async function saveTrainingPlan(
-  userId: string,
-  plan: TrainingPlan,
-  options: SaveTrainingPlanOptions = {},
-) {
+export async function saveTrainingPlan(userId: string, plan: TrainingPlan) {
   const db = getDb();
   const parsedPlan = trainingPlanSchema.parse(plan);
   const timestamp = nowIso();
@@ -133,30 +105,7 @@ export async function saveTrainingPlan(
       },
     });
 
-  await insertPlanVersion(userId, parsedPlan, timestamp, options);
-
   return parsedPlan;
-}
-
-export async function listTrainingPlanVersions(userId: string) {
-  const db = getDb();
-  const rows = await db
-    .select({
-      id: trainingPlanVersions.id,
-      planJson: trainingPlanVersions.planJson,
-      raceDate: trainingPlanVersions.raceDate,
-      source: trainingPlanVersions.source,
-      feedback: trainingPlanVersions.feedback,
-      createdAt: trainingPlanVersions.createdAt,
-    })
-    .from(trainingPlanVersions)
-    .where(eq(trainingPlanVersions.userId, userId))
-    .orderBy(desc(trainingPlanVersions.createdAt));
-
-  return rows.map((row) => ({
-    ...row,
-    plan: parsePlanJson(row.planJson),
-  }));
 }
 
 function parseNullableNumber(value: unknown) {
@@ -170,8 +119,14 @@ function parseNullableNumber(value: unknown) {
 function normalizeWorkoutType(value: unknown) {
   const type = String(value);
   const legacyTypes: Record<string, string> = {
+    recovery: "easy",
+    long: "easy",
+    race: "easy",
+    tempo: "threshold",
     intervals: "interval",
-    "marathon-pace": "marathonPace",
+    marathonPace: "threshold",
+    "marathon-pace": "threshold",
+    hills: "repetition",
   };
 
   return legacyTypes[type] ?? type;
@@ -246,7 +201,6 @@ export async function saveWorkoutLog(userId: string, input: LogWorkoutInput) {
       plannedSessionId: input.plannedSessionId,
       date: input.date,
       type: input.type,
-      title: "",
       distanceKm: input.distanceKm,
       durationMin: input.durationMin,
       perceivedEffort: input.perceivedEffort,
@@ -291,4 +245,15 @@ export async function updateWorkoutLog(userId: string, input: EditWorkoutLogInpu
   const row = result[0];
 
   return row ? rowToWorkoutLog(row) : null;
+}
+
+export async function deleteWorkoutLog(userId: string, id: string) {
+  const db = getDb();
+
+  const result = await db
+    .delete(workoutLogs)
+    .where(and(eq(workoutLogs.id, id), eq(workoutLogs.userId, userId)))
+    .returning({ id: workoutLogs.id });
+
+  return result.length > 0;
 }

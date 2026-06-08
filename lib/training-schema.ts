@@ -15,20 +15,21 @@ export const isoDateSchema = z
 
 export const workoutTypeSchema = z.enum([
   "easy",
-  "recovery",
-  "long",
-  "tempo",
+  "threshold",
   "interval",
-  "hills",
-  "marathonPace",
-  "race",
+  "repetition",
 ]);
 
 export type WorkoutType = z.infer<typeof workoutTypeSchema>;
 
-export const dayOfWeekSchema = z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
+export const workoutTypeLabels: Record<WorkoutType, string> = {
+  easy: "Easy",
+  threshold: "Threshold",
+  interval: "Interval",
+  repetition: "Repetition",
+};
 
-export const weekFocusSchema = z.enum(["base", "build", "cutback", "peak", "taper", "race"]);
+export const dayOfWeekSchema = z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
 
 export const trainingSessionSchema = z
   .object({
@@ -36,11 +37,9 @@ export const trainingSessionSchema = z
     day: dayOfWeekSchema,
     type: workoutTypeSchema,
     optional: z.boolean(),
-    title: z.string().min(1),
     distanceKm: z.number().positive().optional(),
     targetRpe: z.number().int().min(1).max(10).optional(),
-    structure: z.string().min(1).optional(),
-    notes: z.string().min(1).optional(),
+    description: z.string().min(1).optional(),
   })
   .superRefine((session, ctx) => {
     if (!session.distanceKm) {
@@ -58,6 +57,14 @@ export const trainingSessionSchema = z
         path: ["targetRpe"],
       });
     }
+
+    if (session.type !== "easy" && !session.description) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Quality sessions need a description.",
+        path: ["description"],
+      });
+    }
   });
 
 export type TrainingSession = z.infer<typeof trainingSessionSchema>;
@@ -66,7 +73,6 @@ export const trainingWeekSchema = z
   .object({
     weekNumber: z.number().int().min(1),
     startsOn: isoDateSchema,
-    focus: weekFocusSchema,
     targetDistanceKm: z.number().nonnegative(),
     notes: z.string().min(1).optional(),
     sessions: z.array(trainingSessionSchema).min(4).max(6),
@@ -86,7 +92,7 @@ export const trainingWeekSchema = z
 export type TrainingWeek = z.infer<typeof trainingWeekSchema>;
 
 export const trainingPlanSchema = z.object({
-  schemaVersion: z.literal(2),
+  schemaVersion: z.literal(3),
   planId: z.string().min(1),
   name: z.string().min(1),
   race: z.object({

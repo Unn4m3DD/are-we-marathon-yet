@@ -1,41 +1,81 @@
 "use client";
 
-import { CalendarClock, CheckCircle2, Flame, Route } from "lucide-react";
 import Link from "next/link";
-import type { ElementType } from "react";
-import { SessionCard } from "@/components/session-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatLongDate, formatReadableDate } from "@/lib/dates";
-import { formatDistance, formatDuration, formatPaceAndSpeed } from "@/lib/pace";
-import { completedSessionIds, weekEndsOn, weekRequiredDistanceKm } from "@/lib/plan-utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatReadableDate, todayIso } from "@/lib/dates";
+import { formatDistance } from "@/lib/pace";
+import { type PlannedSessionView, weekEndsOn, weekRequiredDistanceKm } from "@/lib/plan-utils";
+import { rpeToneClass } from "@/lib/rpe";
 import { trpc } from "@/lib/trpc-client";
+import { workoutTypeLabels } from "@/lib/training-schema";
+import { cn } from "@/lib/utils";
 
-function StatCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
+function MetricPill({
+  children,
+  tone = "muted",
+  rpe,
 }: {
-  label: string;
-  value: string;
-  detail: string;
-  icon: ElementType;
+  children: React.ReactNode;
+  tone?: "muted" | "rpe";
+  rpe?: number;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-start gap-3 p-4">
-        <span className="rounded-md bg-cyan-50 p-2 text-cyan-700">
-          <Icon className="h-5 w-5" />
-        </span>
-        <div>
-          <p className="text-sm text-zinc-500">{label}</p>
-          <p className="mt-1 text-2xl font-semibold text-zinc-950">{value}</p>
-          <p className="mt-1 text-sm text-zinc-600">{detail}</p>
+    <span
+      className={cn(
+        "inline-flex h-7 items-center rounded-md px-2.5 text-sm leading-none",
+        tone === "rpe"
+          ? rpeToneClass(rpe)
+          : "bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function CompactSessionRow({ session, userId }: { session: PlannedSessionView; userId: string }) {
+  const controls = (
+    <>
+      <MetricPill>{formatDistance(session.distanceKm)}</MetricPill>
+      <MetricPill tone="rpe" rpe={session.targetRpe}>
+        RPE {session.targetRpe}/10
+      </MetricPill>
+      <Link
+        href={`/u/${userId}/log?session=${session.id}`}
+        className="inline-flex h-7 items-center rounded-md border border-zinc-300 bg-white px-2.5 text-sm font-medium leading-none text-zinc-950 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+      >
+        Log
+      </Link>
+    </>
+  );
+
+  return (
+    <div className="border-t border-zinc-200 py-3 first:border-t-0 dark:border-zinc-800">
+      <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-start md:grid-cols-[3rem_minmax(0,1fr)_auto] md:items-center">
+        <div className="pt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">{session.day}</div>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-medium text-zinc-950 dark:text-zinc-50">{workoutTypeLabels[session.type]}</p>
+            {session.optional ? <Badge variant="optional">Optional</Badge> : null}
+          </div>
+          {session.description ? (
+            <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400 md:truncate">
+              {session.description}
+            </p>
+          ) : null}
         </div>
-      </CardContent>
-    </Card>
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2 md:col-start-auto md:mt-0 md:flex-nowrap",
+            "col-start-2 mt-2",
+          )}
+        >
+          {controls}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -44,14 +84,10 @@ export function DashboardClient({ userId }: { userId: string }) {
 
   if (dashboard.isLoading) {
     return (
-      <div className="grid gap-4">
-        <div className="h-48 animate-pulse rounded-lg bg-zinc-200" />
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="h-28 animate-pulse rounded-lg bg-zinc-200" />
-          <div className="h-28 animate-pulse rounded-lg bg-zinc-200" />
-          <div className="h-28 animate-pulse rounded-lg bg-zinc-200" />
-          <div className="h-28 animate-pulse rounded-lg bg-zinc-200" />
-        </div>
+      <div className="grid gap-3">
+        <div className="h-44 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-900" />
+        <div className="h-24 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-900" />
+        <div className="h-56 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-900" />
       </div>
     );
   }
@@ -67,8 +103,7 @@ export function DashboardClient({ userId }: { userId: string }) {
     );
   }
 
-  const { plan, currentWeek, workoutsLeft, nextSession, countdownDays, metrics } = dashboard.data;
-  const done = completedSessionIds(dashboard.data.logs);
+  const { plan, currentWeek, workoutsLeft, nextSession } = dashboard.data;
   const requiredLeft = workoutsLeft.filter((session) => !session.optional).length;
   const optionalLeft = workoutsLeft.filter((session) => session.optional).length;
   const currentWeekEndsOn = weekEndsOn(currentWeek);
@@ -76,153 +111,109 @@ export function DashboardClient({ userId }: { userId: string }) {
   const weeklyCompletedKm = dashboard.data.logs
     .filter((log) => log.date >= currentWeek.startsOn && log.date <= currentWeekEndsOn)
     .reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
-  const baselinePace = formatPaceAndSpeed(
-    Math.round((plan.athleteBaseline.durationMin * 60) / plan.athleteBaseline.distanceKm),
-  );
+  const today = todayIso();
+  const todaySession = workoutsLeft.find((session) => session.date === today) ?? null;
+  const actionSession = todaySession ?? nextSession;
+  const requiredCompletedKm = Math.min(weeklyCompletedKm, currentWeekRequiredKm);
+  const weekProgressPercent =
+    currentWeekRequiredKm === 0 ? 0 : Math.min(100, (requiredCompletedKm / currentWeekRequiredKm) * 100);
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
-      <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Badge variant="required">Week {currentWeek.weekNumber} of {plan.weeks.length}</Badge>
-              <Badge variant="default">{currentWeek.focus}</Badge>
-              <Badge variant="muted">Race {formatLongDate(plan.race.date)}</Badge>
+    <div className="space-y-3 md:space-y-4">
+      <section className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-4">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <Badge variant="required">Week {currentWeek.weekNumber} of {plan.weeks.length}</Badge>
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            {formatReadableDate(currentWeek.startsOn)} to {formatReadableDate(currentWeekEndsOn)}
+          </span>
+        </div>
+
+        {actionSession ? (
+          <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-cyan-800 dark:text-cyan-200">
+                {todaySession ? "Today" : "Next workout"}
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-semibold tracking-normal text-zinc-950 dark:text-zinc-50">
+                  {workoutTypeLabels[actionSession.type]}
+                </h1>
+                {actionSession.optional ? <Badge variant="optional">Optional</Badge> : null}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <MetricPill>{actionSession.day}</MetricPill>
+                <MetricPill>{formatDistance(actionSession.distanceKm)}</MetricPill>
+                <MetricPill tone="rpe" rpe={actionSession.targetRpe}>
+                  RPE {actionSession.targetRpe}/10
+                </MetricPill>
+              </div>
+              {actionSession.description ? (
+                <p className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  {actionSession.description}
+                </p>
+              ) : null}
             </div>
-            <h1 className="text-3xl font-semibold tracking-normal text-zinc-950">
-              {currentWeek.notes ?? currentWeek.focus}
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-600">
-              Baseline: {plan.athleteBaseline.distanceKm} km in{" "}
-              {formatDuration(plan.athleteBaseline.durationMin)} on{" "}
-              {formatReadableDate(plan.athleteBaseline.date)} ({baselinePace}). Optional sessions are
-              available when recovery is good.
+            <div className="flex justify-end">
+              <Button asChild>
+                <Link href={`/u/${userId}/log?session=${actionSession.id}`}>Log this run</Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <p className="text-sm font-medium text-cyan-800 dark:text-cyan-200">This week</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 dark:text-zinc-50">
+                No planned runs left
+              </h1>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Log a custom run if you still train today.
+              </p>
+            </div>
+            <Button asChild className="w-full md:w-auto">
+              <Link href={`/u/${userId}/log`}>Log custom run</Link>
+            </Button>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Week progress</h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {weeklyCompletedKm.toFixed(1)} / {currentWeekRequiredKm.toFixed(1)} required km
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button asChild>
-              <Link href={nextSession ? `/u/${userId}/log?session=${nextSession.id}` : `/u/${userId}/log`}>
-                Log Next Workout
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/u/${userId}/plan`}>View Plan</Link>
-            </Button>
+          <div className="text-right text-sm text-zinc-600 dark:text-zinc-400">
+            <p>{requiredLeft} required left</p>
+            <p>{optionalLeft} optional left</p>
           </div>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900">
+          <div
+            className="h-full rounded-full bg-cyan-700 dark:bg-cyan-500"
+            style={{ width: `${weekProgressPercent}%` }}
+          />
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          icon={CalendarClock}
-          label="Race Countdown"
-          value={`${countdownDays} days`}
-          detail={`${formatDistance(plan.race.distanceKm)} on ${formatReadableDate(plan.race.date)}`}
-        />
-        <StatCard
-          icon={Route}
-          label="This Week"
-          value={`${weeklyCompletedKm.toFixed(1)} / ${currentWeekRequiredKm.toFixed(1)} km`}
-          detail={`Required target, ${currentWeek.targetDistanceKm.toFixed(1)} km with options`}
-        />
-        <StatCard
-          icon={CheckCircle2}
-          label="Required Left"
-          value={`${requiredLeft}`}
-          detail={`${optionalLeft} optional sessions still available`}
-        />
-        <StatCard
-          icon={Flame}
-          label="Logged Total"
-          value={`${metrics.totalDistanceKm.toFixed(1)} km`}
-          detail={`${metrics.requiredCompletionPercent}% required completion to date`}
-        />
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-zinc-950">Workouts Left This Week</h2>
-              <p className="text-sm text-zinc-600">
-                {formatReadableDate(currentWeek.startsOn)} to {formatReadableDate(currentWeekEndsOn)}
-              </p>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/u/${userId}/log`}>Choose Workout</Link>
-            </Button>
-          </div>
-
-          {workoutsLeft.length > 0 ? (
-            <div className="grid gap-4">
-              {workoutsLeft.map((session) => (
-                <SessionCard key={session.id} session={session} userId={userId} />
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-5">
-                <p className="font-medium text-zinc-950">No sessions left this week.</p>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Review metrics, recover, and keep the next week controlled.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+      <section className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-4">
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Remaining runs</h2>
+          <Button asChild size="sm" variant="ghost">
+            <Link href={`/u/${userId}/plan`}>Full plan</Link>
+          </Button>
         </div>
-
-        <aside className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Next Required Session</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {nextSession ? (
-                <SessionCard
-                  session={nextSession}
-                  userId={userId}
-                  compact
-                  bare
-                  completed={done.has(nextSession.id)}
-                />
-              ) : (
-                <p className="text-sm text-zinc-600">All required sessions are logged.</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Preparation Checks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3 text-sm leading-6 text-zinc-700">
-                <li>Use optional runs only when soreness, sleep, and stress are under control.</li>
-                <li>Practice fuel and fluids on every long run from week one.</li>
-                <li>Log RPE and notes so pace, speed, and fatigue trends stay visible.</li>
-                <li>Drop intensity before volume if pain starts changing your gait.</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Metrics</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-zinc-700">
-              <p>Total duration: {formatDuration(metrics.totalDurationMin)}</p>
-              <p>Longest logged run: {metrics.longestRunKm.toFixed(1)} km</p>
-              <p>
-                Average logged pace/speed:{" "}
-                {metrics.averagePaceSecPerKm ? formatPaceAndSpeed(metrics.averagePaceSecPerKm) : "No run logs yet"}
-              </p>
-              <Button asChild variant="outline" className="mt-3 w-full">
-                <Link href={`/u/${userId}/metrics`}>Open Metrics</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </aside>
+        {workoutsLeft.length > 0 ? (
+          <div>
+            {workoutsLeft.map((session) => (
+              <CompactSessionRow key={session.id} session={session} userId={userId} />
+            ))}
+          </div>
+        ) : (
+          <p className="py-3 text-sm text-zinc-600 dark:text-zinc-400">No planned runs left this week.</p>
+        )}
       </section>
     </div>
   );

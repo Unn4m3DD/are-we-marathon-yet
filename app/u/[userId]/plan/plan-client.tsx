@@ -11,51 +11,54 @@ import { formatReadableDate } from "@/lib/dates";
 import { formatDistance, formatDuration } from "@/lib/pace";
 import {
   flattenSessions,
-  sessionDate,
   sessionEstimatedDurationMin,
   weekEndsOn,
   weekRequiredDistanceKm,
 } from "@/lib/plan-utils";
+import { rpeToneClass } from "@/lib/rpe";
 import { trpc } from "@/lib/trpc-client";
 import {
   type TrainingPlan,
   type TrainingSession,
-  type TrainingWeek,
   trainingPlanSchema,
+  workoutTypeLabels,
 } from "@/lib/training-schema";
+import { cn } from "@/lib/utils";
 
-function SessionRow({ session, week }: { session: TrainingSession; week: TrainingWeek }) {
+function SessionRow({ session }: { session: TrainingSession }) {
   const duration = sessionEstimatedDurationMin(session);
 
   return (
-    <div className="grid gap-3 border-t border-zinc-200 py-4 first:border-t-0 md:grid-cols-[8rem_1fr_auto]">
-      <div className="text-sm text-zinc-600">
-        <div className="font-medium text-zinc-900">{session.day}</div>
-        <div>{formatReadableDate(sessionDate(week, session))}</div>
+    <div className="grid gap-3 border-t border-zinc-200 py-3 first:border-t-0 dark:border-zinc-800 md:grid-cols-[5rem_1fr_auto]">
+      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="font-medium text-zinc-900 dark:text-zinc-100">{session.day}</div>
       </div>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-medium text-zinc-950">{session.title}</h3>
-          <Badge variant={session.optional ? "optional" : "required"}>
-            {session.optional ? "Optional" : "Required"}
-          </Badge>
-          <Badge variant="muted">{session.type}</Badge>
+          <h3 className="font-medium text-zinc-950 dark:text-zinc-50">{workoutTypeLabels[session.type]}</h3>
+          {session.optional ? <Badge variant="optional">Optional</Badge> : null}
         </div>
-        {session.structure ? <p className="mt-1 text-sm text-zinc-700">{session.structure}</p> : null}
-        {session.notes ? <p className="mt-1 text-sm text-zinc-600">{session.notes}</p> : null}
+        {session.description ? (
+          <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">{session.description}</p>
+        ) : null}
       </div>
       <div className="flex flex-wrap gap-2 md:justify-end">
         {formatDistance(session.distanceKm) ? (
-          <span className="rounded-md bg-zinc-100 px-2 py-1 text-sm">
+          <span className="inline-flex h-7 items-center rounded-md bg-zinc-100 px-2.5 text-sm leading-none dark:bg-zinc-900 dark:text-zinc-100">
             {formatDistance(session.distanceKm)}
           </span>
         ) : null}
         {formatDuration(duration) ? (
-          <span className="rounded-md bg-zinc-100 px-2 py-1 text-sm">
+          <span className="inline-flex h-7 items-center rounded-md bg-zinc-100 px-2.5 text-sm leading-none dark:bg-zinc-900 dark:text-zinc-100">
             {formatDuration(duration)}
           </span>
         ) : null}
-        <span className="rounded-md bg-cyan-50 px-2 py-1 text-sm text-cyan-900">
+        <span
+          className={cn(
+            "inline-flex h-7 items-center rounded-md px-2.5 text-sm leading-none",
+            rpeToneClass(session.targetRpe),
+          )}
+        >
           RPE {session.targetRpe}/10
         </span>
       </div>
@@ -88,49 +91,20 @@ export function PlanClient({ userId }: { userId: string }) {
   const plan = planQuery.data;
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-950">Training Plan</h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            {plan.weeks.length} weeks, {sessionCount} planned sessions, race day{" "}
-            {formatReadableDate(plan.race.date)}.
+          <h1 className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50">Training Plan</h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            {plan.weeks.length} weeks · {sessionCount} sessions · race {formatReadableDate(plan.race.date)}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/u/${userId}/plan/update`}>Update with ChatGPT</Link>
-          </Button>
           <Button asChild variant="outline">
             <Link href={`/u/${userId}/log`}>Log from Plan</Link>
           </Button>
         </div>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan Assumptions</CardTitle>
-          <CardDescription>
-            Baseline: {plan.athleteBaseline.distanceKm} km in{" "}
-            {formatDuration(plan.athleteBaseline.durationMin)}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2 text-sm leading-6 text-zinc-700 md:grid-cols-2">
-            <div className="rounded-md bg-zinc-50 p-3">
-              Weekly distance progresses from {plan.progression.weeklyDistanceStartKm} km to{" "}
-              {plan.progression.weeklyDistancePeakKm} km.
-            </div>
-            <div className="rounded-md bg-zinc-50 p-3">
-              Long runs progress from {plan.progression.longRunStartKm} km to{" "}
-              {plan.progression.longRunPeakKm} km.
-            </div>
-            <div className="rounded-md bg-zinc-50 p-3">
-              Session intensity is prescribed by RPE instead of planned pace.
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <section className="space-y-4">
         {plan.weeks.map((week) => (
@@ -140,14 +114,13 @@ export function PlanClient({ userId }: { userId: string }) {
                 <div>
                   <div className="mb-2 flex flex-wrap gap-2">
                     <Badge variant="default">Week {week.weekNumber}</Badge>
-                    <Badge variant="muted">{week.focus}</Badge>
                   </div>
-                  <CardTitle>{week.notes ?? week.focus}</CardTitle>
+                  <CardTitle>{week.notes ?? `Week ${week.weekNumber}`}</CardTitle>
                   <CardDescription>
                     {formatReadableDate(week.startsOn)} to {formatReadableDate(weekEndsOn(week))}
                   </CardDescription>
                 </div>
-                <div className="text-sm text-zinc-600 md:text-right">
+                <div className="text-sm text-zinc-600 dark:text-zinc-400 md:text-right">
                   <div>Required: {weekRequiredDistanceKm(week).toFixed(1)} km</div>
                   <div>With optional runs: {week.targetDistanceKm.toFixed(1)} km</div>
                 </div>
@@ -155,22 +128,19 @@ export function PlanClient({ userId }: { userId: string }) {
             </CardHeader>
             <CardContent>
               {week.sessions.map((session) => (
-                <SessionRow key={session.id} session={session} week={week} />
+                <SessionRow key={session.id} session={session} />
               ))}
             </CardContent>
           </Card>
         ))}
       </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan JSON</CardTitle>
-          <CardDescription>
-            The app stores this as one validated JSON blob for this user and keeps a timestamped history.
-          </CardDescription>
-        </CardHeader>
+      <details className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+        <summary className="cursor-pointer p-4 text-base font-semibold text-zinc-950 dark:text-zinc-50">
+          Plan JSON
+        </summary>
         <PlanJsonEditor plan={plan} />
-      </Card>
+      </details>
     </div>
   );
 }

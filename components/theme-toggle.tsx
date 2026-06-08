@@ -36,7 +36,6 @@ export function ThemeToggle() {
   return (
     <Button type="button" variant="ghost" size="sm" onClick={toggleTheme} aria-label="Toggle dark mode">
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      <span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"}</span>
     </Button>
   );
 }

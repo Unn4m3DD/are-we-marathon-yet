@@ -4,21 +4,69 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  type TooltipContentProps,
 } from "recharts";
 import { Activity, CheckCircle2, Clock, Route } from "lucide-react";
 import Link from "next/link";
 import type { ElementType } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistance, formatDuration, formatPaceAndSpeed, formatPace, paceToSpeedKmh } from "@/lib/pace";
 import { trpc } from "@/lib/trpc-client";
+
+type ChartTooltipProps = Partial<TooltipContentProps<number | string, string>> & {
+  valueFormatter?: (value: unknown, name: string, payload: unknown) => string;
+};
+
+function formatTooltipValue(value: unknown) {
+  return Array.isArray(value) ? value.join(" - ") : String(value);
+}
+
+function AppChartTooltip({ active, label, payload, valueFormatter }: ChartTooltipProps) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      {label ? (
+        <p className="mb-2 border-b border-zinc-100 pb-1 font-medium text-zinc-950 dark:border-zinc-800 dark:text-zinc-50">
+          {label}
+        </p>
+      ) : null}
+      <div className="space-y-1">
+        {payload.map((item) => {
+          const name = String(item.name ?? item.dataKey ?? "");
+          const value = item.value;
+
+          if (value == null) {
+            return null;
+          }
+
+          return (
+            <div key={`${name}-${item.dataKey}`} className="flex items-center justify-between gap-5">
+              <span className="flex min-w-0 items-center gap-2 text-zinc-600 dark:text-zinc-400">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: item.color ?? item.fill ?? "#0891b2" }}
+                />
+                <span className="truncate">{name}</span>
+              </span>
+              <span className="font-medium text-zinc-950 dark:text-zinc-50">
+                {valueFormatter ? valueFormatter(value, name, item.payload) : formatTooltipValue(value)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function StatCard({
   label,
@@ -32,18 +80,18 @@ function StatCard({
   icon: ElementType;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-start gap-3 p-4">
-        <span className="rounded-md bg-cyan-50 p-2 text-cyan-700">
+    <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex items-start gap-3 p-3 sm:p-4">
+        <span className="rounded-md bg-cyan-50 p-2 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-200">
           <Icon className="h-5 w-5" />
         </span>
         <div>
-          <p className="text-sm text-zinc-500">{label}</p>
-          <p className="mt-1 text-2xl font-semibold text-zinc-950">{value}</p>
-          <p className="mt-1 text-sm text-zinc-600">{detail}</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
+          <p className="mt-1 text-2xl font-semibold text-zinc-950 dark:text-zinc-50">{value}</p>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{detail}</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -51,17 +99,31 @@ export function MetricsClient({ userId }: { userId: string }) {
   const metricsQuery = trpc.metrics.get.useQuery();
 
   if (metricsQuery.isLoading) {
-    return <div className="h-96 animate-pulse rounded-lg bg-zinc-200" />;
+    return (
+      <div className="grid gap-3">
+        <div className="h-20 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-900" />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-900" />
+          ))}
+        </div>
+        <div className="grid gap-3 xl:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-96 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-900" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (metricsQuery.error || !metricsQuery.data) {
     return (
-      <Card>
-        <CardContent className="p-5">
-          <p className="font-medium text-red-700">Could not load metrics.</p>
-          <p className="mt-2 text-sm text-zinc-600">{metricsQuery.error?.message}</p>
-        </CardContent>
-      </Card>
+      <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="p-3 sm:p-4">
+          <p className="font-medium text-red-700 dark:text-red-400">Could not load metrics.</p>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{metricsQuery.error?.message}</p>
+        </div>
+      </div>
     );
   }
 
@@ -71,14 +133,20 @@ export function MetricsClient({ userId }: { userId: string }) {
     plannedRequiredKm: week.plannedRequiredKm,
     plannedTotalKm: week.plannedTotalKm,
     actualKm: week.actualKm,
+    longestRunKm: week.longestRunKm,
     completionPercent: week.completionPercent,
   }));
   const longRunData = plan.weeks.map((week) => {
-    const longRun = week.sessions[week.sessions.length - 1];
+    const loggedWeek = metrics.weekly.find((metricWeek) => metricWeek.weekNumber === week.weekNumber);
+    const plannedLongestRunKm = Math.max(
+      0,
+      ...week.sessions.map((session) => session.distanceKm ?? 0),
+    );
 
     return {
       week: `W${week.weekNumber}`,
-      plannedKm: longRun.distanceKm ?? 0,
+      plannedLongestRunKm,
+      longestRunKm: loggedWeek?.longestRunKm ?? 0,
     };
   });
   const speedTrend = metrics.paceTrend
@@ -91,20 +159,9 @@ export function MetricsClient({ userId }: { userId: string }) {
     }));
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-950">Metrics</h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            Track volume, completion, long-run progression, and pace with speed.
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href={`/u/${userId}/log`}>Log Workout</Link>
-        </Button>
-      </div>
+    <div className="space-y-3 md:space-y-4">
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={Route}
           label="Logged Distance"
@@ -119,7 +176,7 @@ export function MetricsClient({ userId }: { userId: string }) {
               ? formatPaceAndSpeed(metrics.averagePaceSecPerKm)
               : "No runs yet"
           }
-          detail="Weighted by all logged run distance"
+          detail="Weighted by distance"
         />
         <StatCard
           icon={CheckCircle2}
@@ -135,72 +192,84 @@ export function MetricsClient({ userId }: { userId: string }) {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Weekly Volume</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
+      <section className="grid gap-3 xl:grid-cols-2 md:gap-4">
+        <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="p-3 sm:p-4 pb-3">
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Weekly Volume</h2>
+          </div>
+          <div className="h-80 p-3 sm:p-4 pt-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="week" />
                 <YAxis unit=" km" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="plannedRequiredKm" name="Required plan km" fill="#0891b2" />
+                <Tooltip content={<AppChartTooltip />} cursor={{ fill: "rgba(8, 145, 178, 0.08)" }} />
+                <Bar dataKey="plannedRequiredKm" name="Required km" fill="#0891b2" />
                 <Bar dataKey="actualKm" name="Logged km" fill="#16a34a" />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Required Completion by Week</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
+        <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="p-3 sm:p-4 pb-3">
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Required Completion by Week</h2>
+          </div>
+          <div className="h-80 p-3 sm:p-4 pt-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="week" />
                 <YAxis unit="%" domain={[0, 100]} />
-                <Tooltip />
+                <Tooltip content={<AppChartTooltip valueFormatter={(value) => `${value}%`} />} cursor={{ fill: "rgba(8, 145, 178, 0.08)" }} />
                 <Bar dataKey="completionPercent" name="Required completed" fill="#0f766e" />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Long-Run Progression</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={longRunData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis unit=" km" />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="plannedKm"
-                  name="Planned long run"
-                  stroke="#0891b2"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="p-3 sm:p-4 pb-3">
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Long-Run Progression</h2>
+          </div>
+          <div className="h-80 p-3 sm:p-4 pt-0">
+            {longRunData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={longRunData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="week" />
+                  <YAxis unit=" km" />
+                  <Tooltip content={<AppChartTooltip valueFormatter={(value) => `${value} km`} />} />
+                  <Line
+                    type="monotone"
+                    dataKey="plannedLongestRunKm"
+                    name="Target long run"
+                    stroke="#0891b2"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="longestRunKm"
+                    name="Longest logged run"
+                    stroke="#16a34a"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-zinc-600 dark:text-zinc-400">
+                Log a run with distance to see long-run progression.
+              </div>
+            )}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Pace and Speed Trend</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
+        <div className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="p-3 sm:p-4 pb-3">
+            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Pace and Speed Trend</h2>
+          </div>
+          <div className="h-80 p-3 sm:p-4 pt-0">
             {speedTrend.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={speedTrend}>
@@ -208,13 +277,19 @@ export function MetricsClient({ userId }: { userId: string }) {
                   <XAxis dataKey="date" />
                   <YAxis unit=" km/h" />
                   <Tooltip
-                    formatter={(value, name, item) => {
-                      const payload = item.payload as {
-                        pace?: string | null;
-                        speedKmh?: number | null;
-                      };
-                      return [`${Number(value).toFixed(1)} km/h · ${payload.pace ?? "n/a"}`, name];
-                    }}
+                    content={
+                      <AppChartTooltip
+                        valueFormatter={(value, _name, itemPayload) => {
+                          const typedPayload = itemPayload as {
+                            pace?: string | null;
+                            speedKmh?: number | null;
+                          };
+
+                          return `${Number(value).toFixed(1)} km/h · ${typedPayload.pace ?? "n/a"}`;
+                        }}
+                      />
+                    }
+                    cursor={{ stroke: "rgba(8, 145, 178, 0.35)", strokeWidth: 1 }}
                   />
                   <Line
                     type="monotone"
@@ -226,12 +301,12 @@ export function MetricsClient({ userId }: { userId: string }) {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-zinc-600">
+              <div className="flex h-full items-center justify-center text-sm text-zinc-600 dark:text-zinc-400">
                 Log a run with distance and duration to see pace and speed over time.
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
     </div>
   );

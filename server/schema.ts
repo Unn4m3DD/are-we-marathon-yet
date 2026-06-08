@@ -8,22 +8,6 @@ export const trainingPlans = sqliteTable("training_plans", {
   updatedAt: text("updated_at").notNull(),
 });
 
-export const trainingPlanVersions = sqliteTable(
-  "training_plan_versions",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id").notNull(),
-    planJson: text("plan_json").notNull(),
-    raceDate: text("race_date").notNull(),
-    source: text("source").notNull(),
-    feedback: text("feedback"),
-    createdAt: text("created_at").notNull(),
-  },
-  (table) => [
-    index("training_plan_versions_user_created_idx").on(table.userId, table.createdAt),
-  ],
-);
-
 export const workoutLogs = sqliteTable(
   "workout_logs",
   {
@@ -32,7 +16,6 @@ export const workoutLogs = sqliteTable(
     plannedSessionId: text("planned_session_id"),
     date: text("date").notNull(),
     type: text("type").notNull(),
-    title: text("title").notNull(),
     distanceKm: real("distance_km"),
     durationMin: real("duration_min"),
     perceivedEffort: integer("perceived_effort"),

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { uuidV4Schema } from "@/lib/training-schema";
@@ -43,9 +43,6 @@ export default function Home() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Are We Marathon Yet</CardTitle>
-          <CardDescription>
-            Use your UUID as the only sign-in secret for your marathon training plan.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <form

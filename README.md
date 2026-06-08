@@ -44,14 +44,12 @@ Use `pnpm db:generate` if you want migration files from the Drizzle schema.
 
 The authored starter plan lives at `data/default-training-plan.json` and is validated with Zod before use. New users are seeded from that file, then their plan is stored per user in the database.
 
-Every saved plan is also recorded in `training_plan_versions`, so plan changes over time can be reviewed per user. The ChatGPT update page builds a prompt from the active plan, run history, and manual feedback, then validates pasted replacement JSON before saving it.
-
 The plan intentionally stores only stable authored intent:
 
 - race and baseline
 - simple progression anchors
-- weeks with `startsOn`, `focus`, `targetDistanceKm`, and sessions
-- running sessions with `day`, `type`, `optional`, title, distance, target RPE, and optional notes/structure
+- weeks with `startsOn`, `targetDistanceKm`, optional notes, and sessions
+- running sessions with `day`, Daniels-style `type`, `optional`, distance, target RPE, and a detailed `description`
 
 The app derives week end dates, session dates, weekly required distance, and metrics. Planned sessions use RPE rather than pace; logged runs can still show pace and speed from actual distance and duration. Strength and mobility are intentionally out of scope for this plan.
 

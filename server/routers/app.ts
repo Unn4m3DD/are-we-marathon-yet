@@ -3,8 +3,8 @@ import { TRPCError } from "@trpc/server";
 import { computeMetrics, findCurrentWeek, findNextSession, raceCountdown, weekSessionsLeft } from "@/lib/plan-utils";
 import { editWorkoutLogInputSchema, logWorkoutInputSchema, trainingPlanSchema } from "@/lib/training-schema";
 import {
+  deleteWorkoutLog,
   getTrainingPlan,
-  listTrainingPlanVersions,
   listWorkoutLogs,
   saveTrainingPlan,
   saveWorkoutLog,
@@ -21,18 +21,10 @@ export const appRouter = router({
       .input(
         z.object({
           plan: trainingPlanSchema,
-          feedback: z.string().max(4000).optional(),
-          source: z.enum(["manual", "chatgpt"]).optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        return saveTrainingPlan(ctx.userId, input.plan, {
-          source: input.source ?? "manual",
-          feedback: input.feedback?.trim() || null,
-        });
-    }),
-    history: protectedProcedure.query(async ({ ctx }) => {
-      return listTrainingPlanVersions(ctx.userId);
+        return saveTrainingPlan(ctx.userId, input.plan);
     }),
   }),
   workout: router({
@@ -54,6 +46,24 @@ export const appRouter = router({
 
       return updated;
     }),
+    delete: protectedProcedure
+      .input(
+        z.object({
+          id: z.string().min(1),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const deleted = await deleteWorkoutLog(ctx.userId, input.id);
+
+        if (!deleted) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Workout log not found.",
+          });
+        }
+
+        return { success: true };
+      }),
   }),
   dashboard: router({
     get: protectedProcedure.query(async ({ ctx }) => {
