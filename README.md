@@ -38,7 +38,13 @@ Schema is defined in `server/schema.ts` and applied with Drizzle Kit:
 pnpm db:push
 ```
 
-Use `pnpm db:generate` if you want migration files from the Drizzle schema.
+For deploys, schema changes should be committed as migration files:
+
+```bash
+pnpm db:generate
+```
+
+Vercel runs `pnpm vercel-build`, which applies pending migrations with `pnpm db:migrate` before `pnpm build`.
 
 ## Training Plan
 

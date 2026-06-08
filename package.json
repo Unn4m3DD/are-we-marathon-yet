@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
+    "vercel-build": "pnpm db:migrate && pnpm build",
     "validate:plan": "tsx scripts/validate-plan.ts"
   },
   "dependencies": {
