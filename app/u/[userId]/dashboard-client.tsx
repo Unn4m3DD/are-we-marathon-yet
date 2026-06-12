@@ -110,19 +110,19 @@ export function DashboardClient({ userId }: { userId: string }) {
     return <WelcomeClient userId={userId} />;
   }
 
-  const requiredLeft = workoutsLeft.filter((session) => !session.optional).length;
-  const optionalLeft = workoutsLeft.filter((session) => session.optional).length;
   const currentWeekEndsOn = weekEndsOn(currentWeek);
   const currentWeekRequiredKm = weekRequiredDistanceKm(currentWeek);
+  const currentWeekTotalKm = Math.max(currentWeek.targetDistanceKm, currentWeekRequiredKm);
   const weeklyCompletedKm = dashboard.data.logs
     .filter((log) => log.date >= currentWeek.startsOn && log.date <= currentWeekEndsOn)
     .reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
   const today = todayIso();
   const todaySession = workoutsLeft.find((session) => session.date === today) ?? null;
   const actionSession = todaySession ?? nextSession;
-  const requiredCompletedKm = Math.min(weeklyCompletedKm, currentWeekRequiredKm);
   const weekProgressPercent =
-    currentWeekRequiredKm === 0 ? 0 : Math.min(100, (requiredCompletedKm / currentWeekRequiredKm) * 100);
+    currentWeekTotalKm === 0 ? 0 : Math.min(100, (weeklyCompletedKm / currentWeekTotalKm) * 100);
+  const requiredMarkerPercent =
+    currentWeekTotalKm === 0 ? 0 : Math.min(100, (currentWeekRequiredKm / currentWeekTotalKm) * 100);
 
   return (
     <div className="space-y-3 md:space-y-4">
@@ -184,23 +184,30 @@ export function DashboardClient({ userId }: { userId: string }) {
       </section>
 
       <section className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Week progress</h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {weeklyCompletedKm.toFixed(1)} / {currentWeekRequiredKm.toFixed(1)} required km
+              {weeklyCompletedKm.toFixed(1)} / {currentWeekTotalKm.toFixed(1)} km planned
             </p>
           </div>
-          <div className="text-right text-sm text-zinc-600 dark:text-zinc-400">
-            <p>{requiredLeft} required left</p>
-            <p>{optionalLeft} optional left</p>
-          </div>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900">
-          <div
-            className="h-full rounded-full bg-cyan-700 dark:bg-cyan-500"
-            style={{ width: `${weekProgressPercent}%` }}
-          />
+        <div className="mt-2">
+          <div className="relative h-4 overflow-visible rounded-full bg-gradient-to-r from-zinc-100 via-zinc-100 to-cyan-50 shadow-inner ring-1 ring-zinc-200 dark:from-zinc-900 dark:via-zinc-900 dark:to-cyan-950/50 dark:ring-zinc-800">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-cyan-600 to-emerald-400 shadow-sm transition-[width] dark:from-cyan-500 dark:to-emerald-300"
+              style={{ width: `${weekProgressPercent}%` }}
+            />
+            <div
+              className="absolute -top-1.5 h-7 w-px -translate-x-1/2 bg-zinc-950 dark:bg-zinc-50"
+              style={{ left: `${requiredMarkerPercent}%` }}
+            >
+              <span className="absolute left-1/2 -top-5 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                {currentWeekRequiredKm.toFixed(1)} km
+              </span>
+              <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-zinc-950 shadow-sm dark:border-zinc-950 dark:bg-zinc-50" />
+            </div>
+          </div>
         </div>
       </section>
 
