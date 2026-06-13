@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatReadableDate, todayIso } from "@/lib/dates";
 import { formatDistance } from "@/lib/pace";
-import { type PlannedSessionView, weekEndsOn, weekRequiredDistanceKm } from "@/lib/plan-utils";
+import {
+  completedSessionIds,
+  type PlannedSessionView,
+  sessionDate,
+  weekEndsOn,
+  weekRequiredDistanceKm,
+} from "@/lib/plan-utils";
 import { rpeToneClass } from "@/lib/rpe";
 import { trpc } from "@/lib/trpc-client";
 import { workoutTypeLabels } from "@/lib/training-schema";
@@ -113,12 +119,23 @@ export function DashboardClient({ userId }: { userId: string }) {
   const currentWeekEndsOn = weekEndsOn(currentWeek);
   const currentWeekRequiredKm = weekRequiredDistanceKm(currentWeek);
   const currentWeekTotalKm = Math.max(currentWeek.targetDistanceKm, currentWeekRequiredKm);
-  const weeklyCompletedKm = dashboard.data.logs
+  const logs = dashboard.data.logs;
+  const completed = completedSessionIds(logs);
+  const weeklyCompletedKm = logs
     .filter((log) => log.date >= currentWeek.startsOn && log.date <= currentWeekEndsOn)
     .reduce((sum, log) => sum + (log.distanceKm ?? 0), 0);
   const today = todayIso();
-  const todaySession = workoutsLeft.find((session) => session.date === today) ?? null;
-  const actionSession = todaySession ?? nextSession;
+  const todayPlannedSessions = currentWeek.sessions
+    .map((session) => ({
+      ...session,
+      weekNumber: currentWeek.weekNumber,
+      date: sessionDate(currentWeek, session),
+    }))
+    .filter((session) => session.date === today);
+  const todaySession = todayPlannedSessions.find((session) => !completed.has(session.id)) ?? null;
+  const doneForWeek = workoutsLeft.length === 0;
+  const doneForToday = !doneForWeek && todayPlannedSessions.length > 0 && !todaySession;
+  const actionSession = doneForToday || doneForWeek ? null : todaySession ?? nextSession;
   const weekProgressPercent =
     currentWeekTotalKm === 0 ? 0 : Math.min(100, (weeklyCompletedKm / currentWeekTotalKm) * 100);
   const requiredMarkerPercent =
@@ -165,20 +182,29 @@ export function DashboardClient({ userId }: { userId: string }) {
               </Button>
             </div>
           </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+        ) : doneForWeek ? (
+          <div>
             <div>
               <p className="text-sm font-medium text-cyan-800 dark:text-cyan-200">This week</p>
               <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 dark:text-zinc-50">
-                No planned runs left
+                All workouts done for the week
               </h1>
               <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                Log a custom run if you still train today.
+                No planned runs left this week.
               </p>
             </div>
-            <Button asChild className="w-full md:w-auto">
-              <Link href={`/u/${userId}/log`}>Log custom run</Link>
-            </Button>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm font-medium text-cyan-800 dark:text-cyan-200">Today</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 dark:text-zinc-50">
+              All workouts done for today
+            </h1>
+            {nextSession ? (
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Next planned run: {formatReadableDate(nextSession.date)}.
+              </p>
+            ) : null}
           </div>
         )}
       </section>
