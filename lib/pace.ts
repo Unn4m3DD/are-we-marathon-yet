@@ -81,5 +81,5 @@ export function formatDuration(durationMin?: number | null) {
     return `${minutes} min`;
   }
 
-  return `${hours}h ${minutes.toString().padStart(2, "0")}`;
+  return `${hours}h${minutes.toString().padStart(2, "0")}`;
 }

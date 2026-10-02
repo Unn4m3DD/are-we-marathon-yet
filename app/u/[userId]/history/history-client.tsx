@@ -298,7 +298,7 @@ export function HistoryClient({ publicId }: { publicId?: string } = {}) {
                   <div className="p-3 sm:p-4">
                     <div className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
                       <div className="pt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                        {formatReadableDate(log.date).split(",")[0]}
+                        {formatReadableDate(log.date)}
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
