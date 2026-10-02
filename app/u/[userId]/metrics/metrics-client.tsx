@@ -4,6 +4,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -216,14 +217,15 @@ export function MetricsClient({ userId }: { userId: string }) {
           </div>
           <div className="h-80 p-3 sm:p-4 pt-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
+              <LineChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="week" />
                 <YAxis unit=" km" />
-                <Tooltip content={<AppChartTooltip />} cursor={{ fill: "rgba(8, 145, 178, 0.08)" }} />
-                <Bar dataKey="plannedRequiredKm" name="Required km" fill="#0891b2" />
-                <Bar dataKey="actualKm" name="Logged km" fill="#16a34a" />
-              </BarChart>
+                <Tooltip content={<AppChartTooltip valueFormatter={(value) => `${value} km`} />} />
+                <Legend />
+                <Line type="monotone" dataKey="plannedRequiredKm" name="Required km" stroke="#0891b2" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="actualKm" name="Logged km" stroke="#16a34a" strokeWidth={2} />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
