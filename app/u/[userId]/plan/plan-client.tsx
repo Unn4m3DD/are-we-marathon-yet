@@ -1,18 +1,19 @@
 "use client";
 
 import { Save } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { WelcomeClient } from "@/app/u/[userId]/welcome-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { formatReadableDate } from "@/lib/dates";
+import { formatReadableDate, todayIso } from "@/lib/dates";
 import { formatDistance, formatDuration } from "@/lib/pace";
 import {
   flattenSessions,
   sessionEstimatedDurationMin,
+  sessionDate,
   weekEndsOn,
   weekRequiredDistanceKm,
 } from "@/lib/plan-utils";
@@ -26,11 +27,11 @@ import {
 } from "@/lib/training-schema";
 import { cn } from "@/lib/utils";
 
-function SessionRow({ session }: { session: TrainingSession }) {
+function SessionRow({ session, date }: { session: TrainingSession; date: string }) {
   const duration = sessionEstimatedDurationMin(session);
 
   return (
-    <div className="grid gap-3 border-t border-zinc-200 py-3 first:border-t-0 dark:border-zinc-800 md:grid-cols-[5rem_1fr_auto]">
+    <div data-session-date={date} className="grid scroll-mt-4 gap-3 border-t border-zinc-200 py-3 first:border-t-0 dark:border-zinc-800 md:grid-cols-[5rem_1fr_auto]">
       <div className="text-sm text-zinc-600 dark:text-zinc-400">
         <div className="font-medium text-zinc-900 dark:text-zinc-100">{session.day}</div>
       </div>
@@ -69,6 +70,22 @@ function SessionRow({ session }: { session: TrainingSession }) {
 
 export function PlanClient({ userId }: { userId: string }) {
   const planQuery = trpc.plan.get.useQuery();
+  const planRef = useRef<HTMLDivElement>(null);
+  const scrolledToToday = useRef(false);
+  useLayoutEffect(() => {
+    if (!planQuery.data || !planRef.current || scrolledToToday.current) return;
+
+    const today = todayIso();
+    const week = planQuery.data.weeks.find(
+      (week) => today >= week.startsOn && today <= weekEndsOn(week),
+    );
+    const target = planRef.current.querySelector<HTMLElement>(`[data-session-date="${today}"]`)
+      ?? (week ? planRef.current.querySelector<HTMLElement>(`[data-week-number="${week.weekNumber}"]`) : null);
+    if (target) {
+      target.scrollIntoView({ block: "start" });
+      scrolledToToday.current = true;
+    }
+  }, [planQuery.data]);
   const sessionCount = useMemo(
     () => (planQuery.data ? flattenSessions(planQuery.data).length : 0),
     [planQuery.data],
@@ -96,7 +113,7 @@ export function PlanClient({ userId }: { userId: string }) {
   const plan = planQuery.data;
 
   return (
-    <div className="space-y-5">
+    <div ref={planRef} className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50">Training Plan</h1>
@@ -113,7 +130,7 @@ export function PlanClient({ userId }: { userId: string }) {
 
       <section className="space-y-4">
         {plan.weeks.map((week) => (
-          <Card key={week.weekNumber}>
+          <Card key={week.weekNumber} data-week-number={week.weekNumber} className="scroll-mt-4">
             <CardHeader>
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -133,7 +150,7 @@ export function PlanClient({ userId }: { userId: string }) {
             </CardHeader>
             <CardContent>
               {week.sessions.map((session) => (
-                <SessionRow key={session.id} session={session} />
+                <SessionRow key={session.id} session={session} date={sessionDate(week, session)} />
               ))}
             </CardContent>
           </Card>
