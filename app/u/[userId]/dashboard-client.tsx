@@ -49,18 +49,12 @@ function CompactSessionRow({ session, userId }: { session: PlannedSessionView; u
       <MetricPill tone="rpe" rpe={session.targetRpe}>
         RPE {session.targetRpe}/10
       </MetricPill>
-      <Link
-        href={`/u/${userId}/log?session=${session.id}`}
-        className="inline-flex h-7 items-center rounded-md border border-zinc-300 bg-white px-2.5 text-sm font-medium leading-none text-zinc-950 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-      >
-        Log
-      </Link>
     </>
   );
 
   return (
     <div className="border-t border-zinc-200 py-3 first:border-t-0 dark:border-zinc-800">
-      <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-start md:grid-cols-[3rem_minmax(0,1fr)_auto] md:items-center">
+      <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-start md:grid-cols-[3rem_minmax(0,1fr)_auto_auto] md:items-center">
         <div className="pt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">{session.day}</div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -81,6 +75,12 @@ function CompactSessionRow({ session, userId }: { session: PlannedSessionView; u
         >
           {controls}
         </div>
+        <Link
+          href={`/u/${userId}/log?session=${session.id}`}
+          className="col-start-3 row-start-1 row-span-2 ml-2 self-center whitespace-nowrap md:col-start-4 md:row-span-1 inline-flex h-7 items-center rounded-md bg-zinc-950 px-2.5 text-sm font-medium leading-none text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
+        >
+          Log this run
+        </Link>
       </div>
     </div>
   );
@@ -239,7 +239,7 @@ export function DashboardClient({ userId }: { userId: string }) {
 
       <section className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-4">
         <div className="mb-1 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Remaining runs</h2>
+          <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Incomplete runs this week</h2>
           <Button asChild size="sm" variant="ghost">
             <Link href={`/u/${userId}/plan`}>Full plan</Link>
           </Button>

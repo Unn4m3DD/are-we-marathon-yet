@@ -110,7 +110,7 @@ export function weekSessionsLeft(plan: TrainingPlan, logs: WorkoutLog[], date = 
       weekNumber: currentWeek.weekNumber,
       date: sessionDate(currentWeek, session),
     }))
-    .filter((session) => session.date >= date && !done.has(session.id));
+    .filter((session) => !done.has(session.id));
 }
 
 export function raceCountdown(plan: TrainingPlan, date = todayIso()) {

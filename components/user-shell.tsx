@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc-client";
 
 const navItems = [
   { label: "Week", href: "", icon: CalendarDays },
@@ -31,6 +32,8 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
   const pathname = usePathname();
   const router = useRouter();
   const [copiedUserId, setCopiedUserId] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const utils = trpc.useUtils();
 
   useEffect(() => {
     window.localStorage.setItem("awm_user_id", userId);
@@ -41,6 +44,29 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
     window.localStorage.removeItem("awm_user_id");
     document.cookie = "awm_user_id=; path=/; max-age=0";
     router.push("/");
+  }
+
+  async function exportTrainingData() {
+    setExporting(true);
+
+    try {
+      const [plan, history] = await Promise.all([
+        utils.client.plan.get.query(),
+        utils.client.workout.logs.query(),
+      ]);
+      const exportedAt = new Date().toISOString();
+      const json = JSON.stringify({ version: 1, exportedAt, userId, plan, history }, null, 2);
+      await navigator.clipboard.writeText(json);
+      toast.success("Training data copied", {
+        description: "The JSON includes your plan and full training history.",
+      });
+    } catch {
+      toast.error("Could not copy training data", {
+        description: "Please try again.",
+      });
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function copyUserId() {
@@ -120,6 +146,18 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
             })}
           </nav>
           <div className="flex shrink-0 items-center justify-end gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={exportTrainingData}
+              disabled={exporting}
+              aria-label={exporting ? "Copying training data" : "Copy plan and history as JSON"}
+              title="Copy plan and history as JSON"
+            >
+              <Clipboard className="h-4 w-4" />
+              <span className="hidden lg:inline">{exporting ? "Copying…" : "Copy JSON"}</span>
+            </Button>
             <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={signOut} aria-label="Sign out">
               <LogOut className="h-4 w-4" />
