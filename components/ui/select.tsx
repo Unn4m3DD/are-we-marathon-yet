@@ -117,12 +117,27 @@ export function SelectContent({ children, className }: { children: React.ReactNo
 
 export function SelectItem({ value, children, className }: SelectItemProps) {
   const context = React.useContext(SelectContext);
+  const itemRef = React.useRef<HTMLButtonElement>(null);
+  const selected = context?.value === value;
+  const open = context?.open;
+
+  React.useLayoutEffect(() => {
+    if (open && selected && itemRef.current) {
+      const item = itemRef.current;
+      const menu = item.parentElement;
+      if (menu) {
+        menu.scrollTop = item.offsetTop - (menu.clientHeight - item.offsetHeight) / 2;
+      }
+    }
+  }, [open, selected]);
   if (!context) throw new Error("SelectItem must be used within a Select");
 
   const isSelected = context.value === value;
 
   return (
     <button
+      ref={itemRef}
+      aria-selected={isSelected}
       type="button"
       className={cn(
         "w-full px-3 py-2 text-left text-sm hover:bg-zinc-100 focus:bg-zinc-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800",

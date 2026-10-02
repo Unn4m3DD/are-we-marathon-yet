@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
-  PopoverAnchor,
+  PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
 import {
@@ -40,7 +40,7 @@ export function DatePickerField({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <input type="hidden" name={name} value={date} />
-      <PopoverAnchor asChild>
+      <PopoverTrigger asChild>
         <Button
           id={id}
           type="button"
@@ -49,12 +49,11 @@ export function DatePickerField({
             "w-full justify-start px-3 text-left font-normal",
             !date && "text-zinc-500 dark:text-zinc-400"
           )}
-          onClick={() => setOpen((current) => !current)}
         >
           <CalendarIcon className="h-4 w-4" />
           {date ? formatReadableDate(date) : "Pick a date"}
         </Button>
-      </PopoverAnchor>
+      </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
         <Calendar
           mode="single"

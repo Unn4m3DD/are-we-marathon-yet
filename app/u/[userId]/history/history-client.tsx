@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DurationField } from "@/components/duration-field";
 import { DatePickerField } from "@/components/date-picker-field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -241,7 +242,7 @@ export function HistoryClient() {
                             inputMode="decimal"
                             type="number"
                             min="0"
-                            step="0.1"
+                            step="0.01"
                             defaultValue={numberField(log.distanceKm)}
                           />
                         </div>
@@ -250,17 +251,9 @@ export function HistoryClient() {
                             htmlFor={`duration-${log.id}`}
                             className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                           >
-                            Duration min
+                            Duration
                           </Label>
-                          <Input
-                            id={`duration-${log.id}`}
-                            name="durationMin"
-                            inputMode="decimal"
-                            type="number"
-                            min="0"
-                            step="1"
-                            defaultValue={numberField(log.durationMin)}
-                          />
+                          <DurationField id={`duration-${log.id}`} defaultValue={log.durationMin} />
                         </div>
                         <div className="space-y-2">
                           <Label

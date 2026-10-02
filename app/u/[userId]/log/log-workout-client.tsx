@@ -3,6 +3,7 @@
 import { Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { DurationField } from "@/components/duration-field";
 import { DatePickerField } from "@/components/date-picker-field";
 import { SessionCard } from "@/components/session-card";
 import { Button } from "@/components/ui/button";
@@ -285,7 +286,7 @@ export function LogWorkoutClient({
                     inputMode="decimal"
                     type="number"
                     min="0"
-                    step="0.1"
+                    step="0.01"
                     defaultValue={formDefaults.distanceKm}
                   />
                 </div>
@@ -294,17 +295,9 @@ export function LogWorkoutClient({
                     htmlFor="duration"
                     className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
                   >
-                    Duration min
+                    Duration
                   </Label>
-                  <Input
-                    id="duration"
-                    name="durationMin"
-                    inputMode="decimal"
-                    type="number"
-                    min="0"
-                    step="1"
-                    defaultValue={formDefaults.durationMin}
-                  />
+                  <DurationField id="duration" defaultValue={formDefaults.durationMin === "" ? null : Number(formDefaults.durationMin)} />
                 </div>
                 <div className="space-y-2">
                   <Label
