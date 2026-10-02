@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc-client";
 
@@ -146,18 +147,23 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
             })}
           </nav>
           <div className="flex shrink-0 items-center justify-end gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={exportTrainingData}
-              disabled={exporting}
-              aria-label={exporting ? "Copying training data" : "Copy plan and history as JSON"}
-              title="Copy plan and history as JSON"
-            >
-              <Clipboard className="h-4 w-4" />
-              <span className="hidden lg:inline">{exporting ? "Copying…" : "Copy JSON"}</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={exportTrainingData}
+                    disabled={exporting}
+                    aria-label={exporting ? "Copying training data" : "Copy plan and history as JSON"}
+                  >
+                    <Clipboard className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{exporting ? "Copying…" : "Copy JSON"}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={signOut} aria-label="Sign out">
               <LogOut className="h-4 w-4" />
