@@ -9,7 +9,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DurationField } from "@/components/duration-field";
 import { DatePickerField } from "@/components/date-picker-field";
@@ -51,19 +50,6 @@ function numberOrNull(value: FormDataEntryValue | null) {
 function effortOrNull(value: FormDataEntryValue | null) {
   const stringValue = String(value ?? "").trim();
   return stringValue === "" ? null : Number.parseInt(stringValue, 10);
-}
-
-function runSummary(log: WorkoutLog) {
-  const pace = secondsPerKmFromWorkout(log.distanceKm, log.durationMin);
-
-  return [
-    formatDistance(log.distanceKm),
-    formatDuration(log.durationMin),
-    pace ? formatPaceAndSpeed(pace) : null,
-    log.perceivedEffort ? `RPE ${log.perceivedEffort}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
 }
 
 export function HistoryClient() {
@@ -163,6 +149,7 @@ export function HistoryClient() {
               ? sessionsById.get(log.plannedSessionId)
               : null;
             const editing = editingId === log.id;
+            const pace = secondsPerKmFromWorkout(log.distanceKm, log.durationMin);
 
             return (
               <div
@@ -346,6 +333,9 @@ export function HistoryClient() {
                             {formatDuration(log.durationMin)}
                           </span>
                         ) : null}
+                        <span className="inline-flex h-7 items-center rounded-md bg-zinc-100 px-2.5 text-sm leading-none text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
+                          {pace ? formatPaceAndSpeed(pace) : "Pace / speed unavailable"}
+                        </span>
                         {log.perceivedEffort ? (
                           <span
                             className={cn(
@@ -374,20 +364,19 @@ export function HistoryClient() {
                             if (!open) setWorkoutToDelete(null);
                           }}
                         >
-                          <AlertDialogTrigger>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setWorkoutToDelete(log.id);
-                                setDeleteDialogOpen(true);
-                              }}
-                              disabled={deleteLog.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            aria-label="Delete workout"
+                            onClick={() => {
+                              setWorkoutToDelete(log.id);
+                              setDeleteDialogOpen(true);
+                            }}
+                            disabled={deleteLog.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
