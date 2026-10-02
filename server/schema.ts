@@ -1,5 +1,11 @@
 import { index, real, sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
+export const trainingShares = sqliteTable("training_shares", {
+  publicId: text("public_id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const trainingPlans = sqliteTable("training_plans", {
   userId: text("user_id").primaryKey(),
   planJson: text("plan_json").notNull(),

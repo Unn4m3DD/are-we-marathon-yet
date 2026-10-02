@@ -11,7 +11,29 @@ import {
   trainingPlanSchema,
   workoutLogSchema,
 } from "@/lib/training-schema";
-import { trainingPlans, workoutLogs } from "@/server/schema";
+import { trainingPlans, trainingShares, workoutLogs } from "@/server/schema";
+
+export async function createTrainingShare(userId: string) {
+  await getDb().insert(trainingShares).values({ publicId: randomUUID(), userId, createdAt: nowIso() })
+    .onConflictDoNothing({ target: trainingShares.userId });
+  const [share] = await getDb().select({ publicId: trainingShares.publicId }).from(trainingShares)
+    .where(eq(trainingShares.userId, userId));
+  return share;
+}
+
+export async function getSharedTrainingData(publicId: string) {
+  const [share] = await getDb().select().from(trainingShares).where(eq(trainingShares.publicId, publicId)).limit(1);
+  if (!share) return null;
+  const [plan, privateLogs] = await Promise.all([
+    getExistingTrainingPlan(share.userId), listWorkoutLogs(share.userId),
+  ]);
+  const logs = privateLogs.map(({ userId: _userId, ...log }) => log);
+  // User-authored notes and plan fields can also contain the private key.
+  return JSON.parse(JSON.stringify({ plan, logs }).replaceAll(share.userId, "[private]")) as {
+    plan: TrainingPlan | null;
+    logs: Omit<WorkoutLog, "userId">[];
+  };
+}
 
 type DbGlobal = typeof globalThis & {
   marathonDbClient?: Client;

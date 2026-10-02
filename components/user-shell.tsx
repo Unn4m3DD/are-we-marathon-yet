@@ -10,6 +10,7 @@ import {
   History,
   LogOut,
   PlusCircle,
+  Share2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,6 +36,18 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
   const [copiedUserId, setCopiedUserId] = useState(false);
   const [exporting, setExporting] = useState(false);
   const utils = trpc.useUtils();
+  const share = trpc.share.create.useMutation({
+    onSuccess: async ({ publicId }) => {
+      const url = `${window.location.origin}/u/p/${publicId}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Read-only share link copied");
+      } catch {
+        toast.success("Share link created", { description: url, duration: 15000 });
+      }
+    },
+    onError: () => toast.error("Could not create share link. Please try again."),
+  });
 
   useEffect(() => {
     window.localStorage.setItem("awm_user_id", userId);
@@ -105,9 +118,21 @@ export function UserShell({ userId, children }: { userId: string; children: Reac
               <Activity className="h-4 w-4" />
             </Link>
             <div className="min-w-0">
-              <Link href={`/u/${userId}`} className="block truncate text-sm font-semibold">
-                Are We Marathon Yet
-              </Link>
+              <div className="flex min-w-0 items-center gap-1">
+                <Link href={`/u/${userId}`} className="block truncate text-sm font-semibold">
+                  Are We Marathon Yet
+                </Link>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" aria-label="Share training history and metrics" disabled={share.isPending} onClick={() => share.mutate()}>
+                        <Share2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy read-only share link</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] leading-none text-zinc-500 dark:text-zinc-400">
                 <span className="truncate font-mono" title={userId}>
                   {userId}

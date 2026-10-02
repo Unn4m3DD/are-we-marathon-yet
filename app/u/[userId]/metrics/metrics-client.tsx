@@ -96,8 +96,10 @@ function StatCard({
   );
 }
 
-export function MetricsClient({ userId }: { userId: string }) {
-  const metricsQuery = trpc.metrics.get.useQuery();
+export function MetricsClient({ userId, publicId }: { userId?: string; publicId?: string }) {
+  const privateQuery = trpc.metrics.get.useQuery(undefined, { enabled: !publicId });
+  const sharedQuery = trpc.share.get.useQuery({ publicId: publicId ?? "" }, { enabled: !!publicId });
+  const metricsQuery = publicId ? sharedQuery : privateQuery;
 
   if (metricsQuery.isLoading) {
     return (
@@ -138,9 +140,9 @@ export function MetricsClient({ userId }: { userId: string }) {
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Metrics are calculated from planned workouts and logged runs.
           </p>
-          <Button asChild className="mt-4">
+          {!publicId && <Button asChild className="mt-4">
             <Link href={`/u/${userId}`}>Choose Plan</Link>
-          </Button>
+          </Button>}
         </div>
       </div>
     );

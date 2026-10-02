@@ -4,6 +4,8 @@ import { computeMetrics, findCurrentWeek, findNextSession, raceCountdown, weekSe
 import { editWorkoutLogInputSchema, logWorkoutInputSchema, trainingPlanSchema } from "@/lib/training-schema";
 import {
   deleteWorkoutLog,
+  createTrainingShare,
+  getSharedTrainingData,
   getExistingTrainingPlan,
   listWorkoutLogs,
   saveDefaultTrainingPlan,
@@ -11,9 +13,20 @@ import {
   saveWorkoutLog,
   updateWorkoutLog,
 } from "@/server/db";
-import { protectedProcedure, router } from "@/server/trpc";
+import { protectedProcedure, publicProcedure, router } from "@/server/trpc";
 
 export const appRouter = router({
+  share: router({
+    create: protectedProcedure.mutation(async ({ ctx }) => createTrainingShare(ctx.userId)),
+    get: publicProcedure.input(z.object({ publicId: z.string().uuid() })).query(async ({ input }) => {
+      const data = await getSharedTrainingData(input.publicId);
+      if (!data) throw new TRPCError({ code: "NOT_FOUND", message: "Shared training link not found." });
+      return {
+        ...data,
+        metrics: data.plan ? computeMetrics(data.plan, data.logs.map((log) => ({ ...log, userId: "" }))) : null,
+      };
+    }),
+  }),
   plan: router({
     get: protectedProcedure.query(async ({ ctx }) => {
       return getExistingTrainingPlan(ctx.userId);

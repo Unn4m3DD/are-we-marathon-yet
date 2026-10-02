@@ -13,6 +13,7 @@ function userIdFromPath() {
   }
 
   const pathMatch = window.location.pathname.match(/^\/u\/([^/]+)/);
+  if (pathMatch?.[1] === "p") return null;
   const pathUserId = pathMatch?.[1] ? decodeURIComponent(pathMatch[1]) : null;
 
   return pathUserId ?? window.localStorage.getItem("awm_user_id");

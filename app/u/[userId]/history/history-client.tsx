@@ -52,10 +52,13 @@ function effortOrNull(value: FormDataEntryValue | null) {
   return stringValue === "" ? null : Number.parseInt(stringValue, 10);
 }
 
-export function HistoryClient() {
+export function HistoryClient({ publicId }: { publicId?: string } = {}) {
   const utils = trpc.useUtils();
-  const logsQuery = trpc.workout.logs.useQuery();
-  const planQuery = trpc.plan.get.useQuery();
+  const privateLogsQuery = trpc.workout.logs.useQuery(undefined, { enabled: !publicId });
+  const privatePlanQuery = trpc.plan.get.useQuery(undefined, { enabled: !publicId });
+  const sharedQuery = trpc.share.get.useQuery({ publicId: publicId ?? "" }, { enabled: !!publicId });
+  const logsQuery = publicId ? { ...sharedQuery, data: sharedQuery.data?.logs } : privateLogsQuery;
+  const planQuery = publicId ? { ...sharedQuery, data: sharedQuery.data?.plan } : privatePlanQuery;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
@@ -93,7 +96,7 @@ export function HistoryClient() {
     );
   }, [planQuery.data]);
 
-  function submit(log: WorkoutLog, formData: FormData) {
+  function submit(log: Omit<WorkoutLog, "userId">, formData: FormData) {
     setFormError(null);
 
     const parsedType = workoutTypeSchema.safeParse(
@@ -156,7 +159,7 @@ export function HistoryClient() {
                 key={log.id}
                 className="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
               >
-                {editing ? (
+                {editing && !publicId ? (
                   <div className="p-3 sm:p-4">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
@@ -346,7 +349,7 @@ export function HistoryClient() {
                             RPE {log.perceivedEffort}/10
                           </span>
                         ) : null}
-                        <Button
+                        {!publicId && <><Button
                           type="button"
                           variant="ghost"
                           size="sm"
@@ -400,7 +403,7 @@ export function HistoryClient() {
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
-                        </AlertDialog>
+                        </AlertDialog></>}
                       </div>
                     </div>
                   </div>
